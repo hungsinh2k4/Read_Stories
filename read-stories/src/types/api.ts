@@ -11,6 +11,13 @@ export interface ChapterLatest {
   chapter_api_data: string;
 }
 
+export interface breadCrumb {
+  name: string;
+  slug?: string;
+  isCurrent: boolean;
+  position: number;
+}
+
 export interface Story {
   _id: string;
   name: string;
@@ -29,6 +36,7 @@ export interface SeoOnPage {
   descriptionHead: string;
   og_type: string;
   og_image: string[];
+  og_url?: string;
 }
 
 export interface HomeApiResponse {
@@ -40,3 +48,27 @@ export interface HomeApiResponse {
     APP_DOMAIN_CDN_IMAGE: string;
   };
 }
+
+// Category API (v1/api/the-loai/:slug?page=n)
+export interface CategoryPaging {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+}
+
+export interface CategoryApiData {
+  items: Story[];
+  params: {
+    type_list?: string;
+    slug?: string;
+  };
+  pagination?: CategoryPaging;
+  APP_DOMAIN_CDN_IMAGE?: string;
+}
+
+export interface CategoryApiResponse {
+  data: CategoryApiData;
+}
+
+

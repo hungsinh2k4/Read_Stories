@@ -12,7 +12,7 @@ const NewStoriesSection: React.FC<NewStoriesSectionProps> = ({ stories, cdnDomai
     <StoriesSection 
       stories={stories}
       cdnDomain={cdnDomain}
-      title="TRUYỆN TRANH MỚI CẬP NHẬT"
+      title="Truyện Manga Mới Cập Nhật"
     />
   );
 };

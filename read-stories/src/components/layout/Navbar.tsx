@@ -6,7 +6,7 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
-          <h1 className="text-2xl font-bold text-green-400">TRUYENTRANHNET</h1>
+          <h1 className="text-2xl font-bold text-green-400">TRUYENTRANHVIP</h1>
         </div>
 
         {/* Search Bar */}
