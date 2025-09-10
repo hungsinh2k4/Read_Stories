@@ -21,6 +21,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ slug, title, page = 1
       try {
         setLoading(true);
         const res: CategoryApiResponse = await categoryApi.getMangaData(page, slug);
+        console.log("thanh cong"); // log ra res để xem dữ liệu
         if (!active) return;
         setStories(res.data.items || []);
         if (res.data.APP_DOMAIN_CDN_IMAGE) setCdnDomain(res.data.APP_DOMAIN_CDN_IMAGE);
