@@ -3,7 +3,9 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import {auth } from "../services/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 interface LoginFormData {
   email: string;
   password: string;
@@ -14,6 +16,7 @@ const Login: React.FC = () => {
     email: "",
     password: "",
   });
+  const navigator = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,6 +28,16 @@ const Login: React.FC = () => {
 
     setIsLoading(true);
     setTimeout(() => {
+      try {
+        const user = signInWithEmailAndPassword(auth, loginData.email, loginData.password);
+        console.log(user);
+        navigator("/");
+      } catch (error) {
+        console.error("Login error:", error);
+        toast.error("Đăng nhập thất bại!");
+      } finally {
+        setIsLoading(false);
+      }
       console.log("Login data:", loginData);
       setIsLoading(false);
       toast.success("Đăng nhập thành công!");
