@@ -1,15 +1,17 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "../services/firebase";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 
 interface AuthContextProps {
   user: User | null;
   loading: boolean;
+  logout: () => Promise<void>;  // 👈 thêm logout vào context
 }
 
 const AuthContext = createContext<AuthContextProps>({
   user: null,
   loading: true,
+  logout: async () => {}, // giá trị mặc định (dummy)
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -24,8 +26,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
+  // Hàm logout
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
