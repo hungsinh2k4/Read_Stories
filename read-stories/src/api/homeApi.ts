@@ -38,3 +38,35 @@ export const categoryApi = {
 }
 };
 
+export const newStoriesApi = {
+  getNewStories: async (page: number): Promise<CategoryApiResponse> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/danh-sach/truyen-moi?page=${page}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data;
+    }
+    catch (error) {
+      console.error('Error fetching new stories:', error);
+      throw error;
+    }
+  }
+};
+
+export const completedStoriesApi = {
+  getCompletedStories: async (page: number): Promise<CategoryApiResponse> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/danh-sach/hoan-thanh?page=${page}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching completed stories:', error);
+      throw error;
+    }   
+  }
+};
