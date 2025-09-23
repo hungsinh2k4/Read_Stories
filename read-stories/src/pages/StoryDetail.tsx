@@ -121,18 +121,6 @@ const StoryDetailPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header with back button */}
-      <div className="sticky top-0 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          {/* <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
-          >
-            <ArrowLeft size={20} />
-            Quay lại
-          </button> */}
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Story Header */}
         <div className="bg-gray-800 rounded-2xl p-8 mb-8 shadow-2xl">

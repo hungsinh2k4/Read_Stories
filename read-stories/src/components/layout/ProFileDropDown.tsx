@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 const ProfileDropdown: React.FC = () => {
-  const { user, logout } = useAuthContext();
+  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

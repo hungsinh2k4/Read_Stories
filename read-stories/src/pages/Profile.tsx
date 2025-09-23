@@ -1,134 +1,106 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Heart, Clock, BookOpen, Camera, Star, Award, Bell } from 'lucide-react';
-import type { User } from '../types/user';
-import type { Story } from '../types/api';
 import StatsCard from '../components/StatsCard';
-
-// Extended Story interface for profile-specific features
-interface StoryWithProgress extends Story {
-  progress: number;
-  readChapters: number;
-  totalChapters: number;
-  lastRead: Date;
-  rating: number;
-}
+import AuthRequired from '../components/AuthRequired';
+import ErrorDisplay from '../components/ErrorDisplay';
+import { useAuth } from '../hooks/useAuth';
+import { useUserData } from '../hooks/useUserData';
+import { userDataService } from '../services/userDataService';
+import { addSampleData } from '../services/sampleData';
 
 const UserProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('favorites');
-  const [userProfile, setUserProfile] = useState<User | null>(null);
-  const [favoriteStories, setFavoriteStories] = useState<StoryWithProgress[]>([]);
-  const [readingHistory, setReadingHistory] = useState<StoryWithProgress[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
 
+  // Use Firebase authentication and user data
+  const { user, userProfile, loading: authLoading, refreshUserProfile, error: authError } = useAuth();
+  const { 
+    loading: dataLoading, 
+    error: dataError,
+    getFavoriteStoriesWithProgress, 
+    getStoriesWithProgress 
+  } = useUserData(user?.uid || null);
+
+  const loading = authLoading || dataLoading;
+
+  // Get stories with progress info for display
+  const favoriteStoriesWithProgress = getFavoriteStoriesWithProgress();
+  const readingHistoryWithProgress = getStoriesWithProgress();
+
   // Settings state
   const [settings, setSettings] = useState({
-    displayName: '',
-    email: '',
-    notifications: true,
-    darkMode: false,
-    autoBookmark: true
+    displayName: userProfile?.displayName || '',
+    email: userProfile?.email || '',
+    notifications: userProfile?.settings?.notifications ?? true,
+    darkMode: userProfile?.settings?.darkMode ?? false,
+    autoBookmark: userProfile?.settings?.autoBookmark ?? true
   });
 
+  // Update settings when userProfile changes
   useEffect(() => {
-    // Mock data for demo
-    const mockUser: User = {
-      uid: 'user123',
-      displayName: 'Nguyễn Văn A',
-      email: 'user@example.com',
-      photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      joinDate: new Date('2023-01-15'),
-      stats: {
-        storiesRead: 125,
-        favoriteCount: 48,
-        readingTimeHours: 267,
-        completedStories: 89
-      },
-      vipStatus: false
-    };
-
-    const mockFavorites: (Story & { progress: number; readChapters: number; totalChapters: number; lastRead: Date; rating: number })[] = [
-      {
-        _id: '1',
-        name: 'Đấu Phá Thương Khung',
-        slug: 'dau-pha-thuong-khung',
-        origin_name: ['Battle Through the Heavens'],
-        status: 'ongoing',
-        thumb_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=400&fit=crop',
-        sub_docquyen: false,
-        category: [{ id: '1', name: 'Tiên hiệp', slug: 'tien-hiep' }],
-        updatedAt: '2024-01-15',
-        chaptersLatest: [],
-        progress: 75,
-        readChapters: 1200,
-        totalChapters: 1600,
-        lastRead: new Date('2024-01-10'),
-        rating: 4.8
-      },
-      {
-        _id: '2',
-        name: 'Tôn Thần',
-        slug: 'ton-than',
-        origin_name: ['Martial God'],
-        status: 'completed',
-        thumb_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=400&fit=crop',
-        sub_docquyen: true,
-        category: [{ id: '2', name: 'Huyền huyễn', slug: 'huyen-huyen' }],
-        updatedAt: '2024-01-12',
-        chaptersLatest: [],
-        progress: 100,
-        readChapters: 2000,
-        totalChapters: 2000,
-        lastRead: new Date('2024-01-08'),
-        rating: 4.9
-      }
-    ];
-
-    const mockHistory: (Story & { progress: number; readChapters: number; totalChapters: number; lastRead: Date; rating: number })[] = [
-      ...mockFavorites,
-      {
-        _id: '3',
-        name: 'Ngự Thiên',
-        slug: 'ngu-thien',
-        origin_name: ['Emperor\'s Domination'],
-        status: 'ongoing',
-        thumb_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=400&fit=crop',
-        sub_docquyen: false,
-        category: [{ id: '3', name: 'Võ hiệp', slug: 'vo-hiep' }],
-        updatedAt: '2024-01-14',
-        chaptersLatest: [],
-        progress: 45,
-        readChapters: 900,
-        totalChapters: 2000,
-        lastRead: new Date('2024-01-14'),
-        rating: 4.7
-      }
-    ];
-
-    setTimeout(() => {
-      setUserProfile(mockUser);
-      setFavoriteStories(mockFavorites);
-      setReadingHistory(mockHistory);
+    if (userProfile) {
       setSettings({
-        displayName: mockUser.displayName,
-        email: mockUser.email,
-        notifications: true,
-        darkMode: false,
-        autoBookmark: true
+        displayName: userProfile.displayName,
+        email: userProfile.email,
+        notifications: userProfile.settings?.notifications ?? true,
+        darkMode: userProfile.settings?.darkMode ?? false,
+        autoBookmark: userProfile.settings?.autoBookmark ?? true
       });
-      setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [userProfile]);
 
   const handleAvatarUpload = () => {
     // Simulate avatar upload
     showToast('Đã cập nhật ảnh đại diện thành công!');
   };
 
-  const handleSaveSettings = () => {
-    // Simulate save settings to Firebase
-    showToast('Đã lưu cài đặt thành công!');
+  const handleAddSampleData = async () => {
+    if (!user) return;
+    
+    try {
+      const result = await addSampleData(user.uid);
+      if (result.success) {
+        showToast('Đã thêm dữ liệu mẫu thành công!');
+        // Refresh data
+        window.location.reload();
+      } else {
+        showToast('Có lỗi khi thêm dữ liệu mẫu: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error adding sample data:', error);
+      showToast('Có lỗi khi thêm dữ liệu mẫu!');
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!user) return;
+    
+    try {
+      await userDataService.updateUserSettings(user.uid, {
+        notifications: settings.notifications,
+        darkMode: settings.darkMode,
+        autoBookmark: settings.autoBookmark
+      });
+      
+      // Update display name and email if changed
+      if (settings.displayName !== userProfile?.displayName || settings.email !== userProfile?.email) {
+        await userDataService.createOrUpdateUserProfile(user.uid, {
+          displayName: settings.displayName,
+          email: settings.email
+        });
+      }
+      
+      // Refresh user profile
+      if (refreshUserProfile) {
+        await refreshUserProfile();
+      }
+      
+      showToast('Đã lưu cài đặt thành công!');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      showToast('Có lỗi khi lưu cài đặt!');
+    }
   };
 
   const showToast = (message: string) => {
@@ -163,7 +135,20 @@ if (loading) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br bg-gray-900 from-gray-900 to-blue-800 p-4">
+    <AuthRequired user={user} loading={loading}>
+      {/* Error Display */}
+      {(authError || dataError) && (
+        <ErrorDisplay 
+          error={authError || dataError || 'Đã có lỗi xảy ra'}
+          onRetry={() => window.location.reload()}
+          onDismiss={() => {
+            // Clear errors by refreshing components
+            if (refreshUserProfile) refreshUserProfile();
+          }}
+        />
+      )}
+      
+      <div className="min-h-screen bg-gradient-to-br bg-gray-900 from-gray-900 to-blue-800 p-4">
       {/* Notification Toast */}
       <div className={`fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 z-50 ${showNotification ? 'translate-x-0' : 'translate-x-full'}`}>
         ✅ {notificationMessage}
@@ -176,9 +161,13 @@ if (loading) {
             {/* Avatar Section */}
             <div className="relative group">
               <img 
-                src={userProfile?.photoURL} 
+                src={userProfile?.photoURL || 'https://via.placeholder.com/128x128/9333ea/ffffff?text=User'} 
                 alt="Avatar"
                 className="w-32 h-32 rounded-full object-cover border-4 border-purple-500 shadow-xl group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'https://via.placeholder.com/128x128/9333ea/ffffff?text=User';
+                }}
               />
               <button 
                 onClick={handleAvatarUpload}
@@ -279,13 +268,17 @@ if (loading) {
                   Truyện yêu thích
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {favoriteStories.map((story) => (
+                  {favoriteStoriesWithProgress.map((story) => (
                     <div key={story._id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border hover:border-purple-200">
                       <div className="aspect-w-3 aspect-h-4 relative overflow-hidden">
                         <img 
-                          src={story.thumb_url} 
+                          src={story.thumb_url || 'https://via.placeholder.com/300x400/6366f1/ffffff?text=No+Image'} 
                           alt={story.name}
                           className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'https://via.placeholder.com/300x400/6366f1/ffffff?text=No+Image';
+                          }}
                         />
                         <div className="absolute top-3 right-3 bg-black/70 text-white px-2 py-1 rounded-lg text-sm">
                           ⭐ {story.rating}
@@ -334,11 +327,17 @@ if (loading) {
                     </div>
                   ))}
                 </div>
-                {favoriteStories.length === 0 && (
+                {favoriteStoriesWithProgress.length === 0 && (
                   <div className="text-center py-12">
                     <Heart className="mx-auto text-gray-300 mb-4" size={48} />
                     <p className="text-gray-500 text-lg">Chưa có truyện yêu thích nào</p>
-                    <p className="text-gray-400 text-sm">Hãy thêm những truyện bạn yêu thích để theo dõi dễ dàng hơn</p>
+                    <p className="text-gray-400 text-sm mb-6">Hãy thêm những truyện bạn yêu thích để theo dõi dễ dàng hơn</p>
+                    <button 
+                      onClick={handleAddSampleData}
+                      className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                    >
+                      Thêm dữ liệu mẫu để test
+                    </button>
                   </div>
                 )}
               </div>
@@ -352,12 +351,16 @@ if (loading) {
                   Lịch sử đọc
                 </h2>
                 <div className="space-y-4">
-                  {readingHistory.map((story) => (
+                  {readingHistoryWithProgress.map((story) => (
                     <div key={story._id} className="flex bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border hover:border-blue-200">
                       <img 
-                        src={story.thumb_url} 
+                        src={story.thumb_url || 'https://via.placeholder.com/96x128/3b82f6/ffffff?text=No+Image'}
                         alt={story.name}
                         className="w-24 h-32 object-cover flex-shrink-0"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://via.placeholder.com/96x128/3b82f6/ffffff?text=No+Image';
+                        }}
                       />
                       <div className="flex-1 p-6">
                         <div className="flex justify-between items-start mb-3">
@@ -408,11 +411,17 @@ if (loading) {
                     </div>
                   ))}
                 </div>
-                {readingHistory.length === 0 && (
+                {readingHistoryWithProgress.length === 0 && (
                   <div className="text-center py-12">
                     <Clock className="mx-auto text-gray-300 mb-4" size={48} />
                     <p className="text-gray-500 text-lg">Chưa có lịch sử đọc</p>
-                    <p className="text-gray-400 text-sm">Hãy bắt đầu đọc truyện để xem lịch sử ở đây</p>
+                    <p className="text-gray-400 text-sm mb-6">Hãy bắt đầu đọc truyện để xem lịch sử ở đây</p>
+                    <button 
+                      onClick={handleAddSampleData}
+                      className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      Thêm dữ liệu mẫu để test
+                    </button>
                   </div>
                 )}
               </div>
@@ -505,9 +514,10 @@ if (loading) {
               </div>
             )}
           </div>
+          </div>
         </div>
       </div>
-    </div>
+    </AuthRequired>
   );
 };
 

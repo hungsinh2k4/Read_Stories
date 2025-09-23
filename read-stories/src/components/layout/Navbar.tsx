@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useAuthContext } from "../../contexts/AuthContext";
 import ProfileDropdown from "./ProFileDropDown";
+import {useAuth} from "../../hooks/useAuth";
 
 const Navbar = () => {
-  const { user, logout } = useAuthContext(); // user + logout từ AuthContext
+  const { user, logout } = useAuth(); // user + logout từ AuthContext
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {

@@ -36,8 +36,8 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({
 
         <div className={`grid ${columnsClassName} gap-4`}>
           {stories.map((story) => (
-            <Link to={`/story/${story.slug}`}>
-            <div key={story._id} className="group cursor-pointer">
+            <Link key={story._id} to={`/story/${story.slug}`}>
+            <div className="group cursor-pointer">
               <div className="relative">
                 <div className="relative overflow-hidden rounded-lg bg-gray-700 aspect-[3/4] mb-2">
                   <img
