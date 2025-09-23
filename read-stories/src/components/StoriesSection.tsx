@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Story } from '../types/api';
-
+import { Link } from 'react-router-dom';
 interface StoriesSectionProps {
   stories: Story[];
   cdnDomain?: string;
@@ -36,6 +36,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({
 
         <div className={`grid ${columnsClassName} gap-4`}>
           {stories.map((story) => (
+            <Link to={`/story/${story.slug}`}>
             <div key={story._id} className="group cursor-pointer">
               <div className="relative">
                 <div className="relative overflow-hidden rounded-lg bg-gray-700 aspect-[3/4] mb-2">
@@ -59,7 +60,6 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({
                       }
                     }}
                   />
-
                   {showTimeBadge && (
                     <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
                       {formatTimeAgo(story.updatedAt)}
@@ -97,6 +97,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({
                 </div>
               </div>
             </div>
+            </Link>
           ))}
         </div>
       </div>

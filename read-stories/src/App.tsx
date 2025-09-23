@@ -8,6 +8,8 @@ import Register from './pages/Register';
 import { AuthProvider } from './contexts/AuthContext';
 import NewStories from './pages/NewStories';
 import CompletedStories from './pages/CompletedStories';
+import Profile from './pages/Profile';
+import StoryDetailPage from './pages/StoryDetail';
 function App() {
   return (
     <>
@@ -18,7 +20,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/new" element={<NewStories />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/completed" element={<CompletedStories />} />
+        <Route path="/story/:slug" element={<StoryDetailPage />} />
       </Routes>
       <Footer />
     </AuthProvider>

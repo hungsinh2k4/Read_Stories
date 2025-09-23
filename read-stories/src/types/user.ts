@@ -1,7 +1,14 @@
-export interface User {
-  id: string;
-  name: string;
+export interface UserProfile {
+  uid: string;
+  displayName: string;
   email: string;
-  age: number;
-  vip: boolean;
+  photoURL: string;
+  joinDate: Date;
+  stats: {
+    storiesRead: number;
+    favoriteCount: number;
+    readingTimeHours: number;
+    completedStories: number;
+  };
+  vipStatus: boolean;
 }
