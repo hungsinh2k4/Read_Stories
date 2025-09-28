@@ -1,10 +1,8 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import ProfileDropdown from "./ProFileDropDown";
-import {useAuth} from "../../hooks/useAuth";
 
 const Navbar = () => {
-  const { user, logout } = useAuth(); // user + logout từ AuthContext
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
@@ -14,14 +12,6 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      console.log("Đăng xuất thành công");
-    } catch (error) {
-      console.error("Lỗi đăng xuất:", error);
-    }
-  };
 
   return (
     <nav className="bg-gray-900 text-white px-4 py-3 shadow-lg">

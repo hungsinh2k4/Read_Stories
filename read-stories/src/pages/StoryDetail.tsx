@@ -76,8 +76,13 @@ const StoryDetailPage: React.FC = () => {
   };
 
   const handleReadChapter = (chapterData: any) => {
-    // TODO: Navigate to chapter reader
-    console.log('Reading chapter:', chapterData);
+    if (!slug || !chapterData?.filename) {
+      console.error('Missing story slug or chapter filename');
+      return;
+    }
+    
+    // Navigate to chapter reader
+    navigate(`/story/${slug}/chapter/${chapterData.filename}`);
   };
 
   if (loading) {

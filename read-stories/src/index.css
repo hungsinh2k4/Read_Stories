@@ -70,6 +70,52 @@ body {
   background: #a8a8a8;
 }
 
+/* Custom scrollbar for chapter list */
+.chapter-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chapter-list::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.chapter-list::-webkit-scrollbar-thumb {
+  background: #6B7280;
+  border-radius: 4px;
+}
+
+.chapter-list::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Image optimization for chapter reader */
+.chapter-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  transition: opacity 0.3s ease;
+}
+
+.chapter-image.loading {
+  opacity: 0.5;
+}
+
+/* Hide scrollbar for full-screen reading */
+.reader-container::-webkit-scrollbar {
+  display: none;
+}
+
+.reader-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Smooth transitions for all elements */
 * {
   transition: colors 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
