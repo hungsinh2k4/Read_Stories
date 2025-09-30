@@ -26,7 +26,7 @@ const Home: React.FC = () => {
     };
 
     fetchHomeData();
-  }, []);
+  }, [window.scroll(0,0)]);
 
   if (loading) {
     return (

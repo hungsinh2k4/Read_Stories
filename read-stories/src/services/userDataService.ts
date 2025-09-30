@@ -8,7 +8,6 @@ import {
   getDocs, 
   query, 
   where, 
-  orderBy, 
   limit,
   deleteDoc,
   serverTimestamp
@@ -180,35 +179,27 @@ class UserDataService {
   // Lấy lịch sử đọc
   async getReadingHistory(userId: string, limitCount: number = 20): Promise<ReadingProgress[]> {
     try {
-      // Kiểm tra xem có data không trước khi query với orderBy
-      const simpleQuery = query(
-        collection(db, 'readingProgress'),
-        where('userId', '==', userId),
-        limit(1)
-      );
-      
-      const simpleSnap = await getDocs(simpleQuery);
-      
-      // Nếu không có data, return empty array
-      if (simpleSnap.empty) {
-        console.log('No reading history found for user:', userId);
-        return [];
-      }
-
-      // Nếu có data, thực hiện query với orderBy
+      // Sử dụng simple query luôn để tránh index issues
       const historyQuery = query(
         collection(db, 'readingProgress'),
         where('userId', '==', userId),
-        orderBy('lastRead', 'desc'),
         limit(limitCount)
       );
       
       const historySnap = await getDocs(historyQuery);
-      return historySnap.docs.map(doc => ({
+      
+      if (historySnap.empty) {
+        return [];
+      }
+
+      const results = historySnap.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         lastRead: doc.data().lastRead?.toDate() || new Date()
       })) as ReadingProgress[];
+      
+      // Sort manually in JavaScript (tránh cần index)
+      return results.sort((a, b) => b.lastRead.getTime() - a.lastRead.getTime());
     } catch (error: any) {
       console.error('Error getting reading history:', error);
       
@@ -276,34 +267,26 @@ class UserDataService {
   // Lấy danh sách yêu thích
   async getFavoriteStories(userId: string): Promise<FavoriteStory[]> {
     try {
-      // Kiểm tra xem có data không trước khi query với orderBy
-      const simpleQuery = query(
-        collection(db, 'favorites'),
-        where('userId', '==', userId),
-        limit(1)
-      );
-      
-      const simpleSnap = await getDocs(simpleQuery);
-      
-      // Nếu không có data, return empty array
-      if (simpleSnap.empty) {
-        console.log('No favorite stories found for user:', userId);
-        return [];
-      }
-
-      // Nếu có data, thực hiện query với orderBy
+      // Sử dụng simple query luôn để tránh index issues
       const favoritesQuery = query(
         collection(db, 'favorites'),
-        where('userId', '==', userId),
-        orderBy('addedAt', 'desc')
+        where('userId', '==', userId)
       );
       
       const favoritesSnap = await getDocs(favoritesQuery);
-      return favoritesSnap.docs.map(doc => ({
+      
+      if (favoritesSnap.empty) {
+        return [];
+      }
+
+      const results = favoritesSnap.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         addedAt: doc.data().addedAt?.toDate() || new Date()
       })) as FavoriteStory[];
+      
+      // Sort manually in JavaScript (tránh cần index)
+      return results.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
     } catch (error: any) {
       console.error('Error getting favorite stories:', error);
       

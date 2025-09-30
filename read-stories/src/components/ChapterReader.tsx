@@ -189,18 +189,33 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
       </div>
 
       {/* Nội dung ảnh */}
-      <div className="pt-20 pb-8">
+      <div className="pt-20 pb-8 reader-container">
         <div className="max-w-4xl mx-auto px-4">
+          {chapterImages.length === 0 && !loading && (
+            <div className="text-center text-gray-400 py-20">
+              <p>Không có nội dung để hiển thị</p>
+            </div>
+          )}
+          
           {chapterImages.map((imageUrl, index) => (
             <div key={index} className="mb-2">
               <img
                 src={imageUrl}
                 alt={`Trang ${index + 1}`}
-                className="w-full h-auto block mx-auto"
+                className="chapter-image w-full h-auto block mx-auto"
                 loading={index < 5 ? 'eager' : 'lazy'}
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.classList.remove('loading');
+                }}
+                onLoadStart={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.classList.add('loading');
+                }}
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.style.display = 'none';
+                  console.log(`Failed to load image: ${imageUrl}`);
                 }}
               />
             </div>

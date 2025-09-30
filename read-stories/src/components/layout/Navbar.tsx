@@ -1,14 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ProfileDropdown from "./ProFileDropDown";
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (searchQuery.trim()) {
-      console.log("Searching for:", searchQuery);
+      // Navigate to search page with query parameter
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery(""); // Clear search input
     }
   };
 

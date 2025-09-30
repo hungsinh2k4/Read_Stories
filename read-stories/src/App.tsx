@@ -11,6 +11,9 @@ import CompletedStories from './pages/CompletedStories';
 import Profile from './pages/Profile';
 import StoryDetailPage from './pages/StoryDetail';
 import ChapterReader from './components/ChapterReader';
+import SearchPage from './pages/Search';
+import FavoritesPage from './pages/Favorites';
+import HistoryPage from './pages/History';
 function App() {
   const location = useLocation();
   const isReaderPage = location.pathname.includes('/chapter');
@@ -29,6 +32,9 @@ function App() {
         <Route path="/story/:slug" element={<StoryDetailPage />} />
         <Route path="/story/:storySlug/chapter/:chapterFilename" element={<ChapterReader />} />
         <Route path="/story/:storySlug/chapter" element={<ChapterReader />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/favorite" element={<FavoritesPage />} />
+        <Route path="/history" element={<HistoryPage />} />
       </Routes>
       {!isReaderPage && <Footer />}
     </AuthProvider>

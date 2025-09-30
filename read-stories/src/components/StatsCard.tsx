@@ -38,7 +38,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ icon: Icon, value, label, color, 
   return (
     <div className={`${currentColor.bg} p-4 rounded-2xl text-center hover:shadow-lg transition-all duration-300 transform hover:scale-105`}>
       <div className="flex items-center justify-center mb-2">
-        <Icon className={`${currentColor.icon} mr-2`} size={24} />
+        <Icon className={`${currentColor.icon}`} size={24} />
       </div>
       <div className={`text-3xl font-bold ${currentColor.value}`}>
         {value}{suffix}

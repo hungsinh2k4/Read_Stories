@@ -8,22 +8,32 @@ import {
   User, 
   Tag,
   ChevronRight,
-  Bookmark,
-  ArrowLeft
+  Bookmark
 } from 'lucide-react';
 import { fetchStoryDetails } from '../api/storyApi';
+import { useAuth } from '../hooks/useAuth';
+import { useUserData } from '../hooks/useUserData';
 import type { StoryDetails } from '../types/story';
 
 const StoryDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { 
+    addReadingProgress, 
+    addToFavorites, 
+    removeFromFavorites, 
+    isStoryFavorite 
+  } = useUserData(user?.uid || null);
+
   const [story, setStory] = useState<StoryDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [activeChapterServer, setActiveChapterServer] = useState(0);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     const loadStoryDetails = async () => {
@@ -45,15 +55,53 @@ const StoryDetailPage: React.FC = () => {
 
     loadStoryDetails();
   }, [slug]);
+  useEffect(() => {
+    if (user && story) {
+      setIsFavorite(isStoryFavorite(story._id));
+    }
+  }, [user, story]); // Removed isStoryFavorite from dependencies
 
-  const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    // TODO: Implement API call to add/remove from favorites
+  const handleToggleFavorite = async () => {
+    if (!user || !story) {
+      alert('Vui lòng đăng nhập để thêm vào yêu thích');
+      navigate('/login');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      if (isFavorite) {
+        await removeFromFavorites(story._id);
+        setIsFavorite(false);
+      } else {
+        await addToFavorites(
+          story._id,
+          story.name,
+          story.slug,
+          story.thumb_url,
+          story.status,
+          story.category[0]?.name || 'Truyện tranh'
+        );
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Có lỗi xảy ra khi cập nhật yêu thích');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  const handleToggleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-    // TODO: Implement API call to add/remove bookmark
+  const handleToggleBookmark = async () => {
+    if (!user || !story) {
+      alert('Vui lòng đăng nhập để lưu truyện');
+      navigate('/login');
+      return;
+    }
+
+    // For now, bookmarks work the same as favorites
+    // In the future, you could implement a separate bookmark system
+    await handleToggleFavorite();
   };
 
   const handleShare = async () => {
@@ -75,10 +123,30 @@ const StoryDetailPage: React.FC = () => {
     }
   };
 
-  const handleReadChapter = (chapterData: any) => {
+  const handleReadChapter = async (chapterData: any) => {
     if (!slug || !chapterData?.filename) {
       console.error('Missing story slug or chapter filename');
       return;
+    }
+
+    // Add to reading history if user is logged in
+    if (user && story) {
+      try {
+        await addReadingProgress(
+          story._id,
+          story.name,
+          story.slug,
+          story.thumb_url,
+          0, // progress percentage
+          1, // chapters read (starting with 1)
+          story.chapters?.[0]?.server_data?.length || 100, // total chapters
+          story.category[0]?.name || 'Truyện tranh',
+          0 // rating (default)
+        );
+      } catch (error) {
+        console.error('Error adding to reading history:', error);
+        // Don't block navigation if history fails
+      }
     }
     
     // Navigate to chapter reader
@@ -205,26 +273,36 @@ const StoryDetailPage: React.FC = () => {
               <div className="flex flex-wrap gap-4">
                 <button
                   onClick={handleToggleFavorite}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                  disabled={actionLoading}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 ${
                     isFavorite 
                       ? 'bg-red-500 hover:bg-red-600 text-white' 
                       : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
                   }`}
                 >
-                  <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-                  {isFavorite ? 'Đã thích' : 'Yêu thích'}
+                  {actionLoading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                  ) : (
+                    <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                  )}
+                  {actionLoading ? 'Đang xử lý...' : (isFavorite ? 'Đã thích' : 'Yêu thích')}
                 </button>
 
                 <button
                   onClick={handleToggleBookmark}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-                    isBookmarked 
+                  disabled={actionLoading}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 ${
+                    isFavorite 
                       ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
                       : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
                   }`}
                 >
-                  <Bookmark size={20} fill={isBookmarked ? 'currentColor' : 'none'} />
-                  {isBookmarked ? 'Đã lưu' : 'Lưu truyện'}
+                  {actionLoading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                  ) : (
+                    <Bookmark size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                  )}
+                  {actionLoading ? 'Đang xử lý...' : (isFavorite ? 'Đã lưu' : 'Lưu truyện')}
                 </button>
 
                 <button

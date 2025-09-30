@@ -2,6 +2,20 @@ import type { StoryDetails, ApiResponse, ChapterData } from "../types/story";
 
 const API_BASE_URL = 'https://otruyenapi.com/v1/api';
 
+// Interface riêng cho search response vì cấu trúc khác
+interface SearchApiResponse {
+  status: string;
+  message: string;
+  data: {
+    items: StoryDetails[];
+    APP_DOMAIN_CDN_IMAGE: string;
+    params: any;
+    seoOnPage: any;
+    titlePage: string;
+    breadCrumb: any[];
+  };
+}
+
 // Interface cho response của chapter content API
 interface ChapterContentResponse {
   status: string;
@@ -91,4 +105,22 @@ export const getAdjacentChapter = (chapters: ChapterData[], currentFilename: str
     }
     
     return null;
+};
+
+
+export const searchApi = async (query: string): Promise<SearchApiResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tim-kiem?keyword=${encodeURIComponent(query)}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch search results');
+    }
+    const apiResponse: SearchApiResponse = await response.json();
+    if (apiResponse.status !== 'success') {
+      throw new Error(apiResponse.message || 'API request failed');
+    }
+    return apiResponse;
+  } catch (error) {
+    console.error('Error fetching search API:', error);
+    throw error;
+  } 
 };

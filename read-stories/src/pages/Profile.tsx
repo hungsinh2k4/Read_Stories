@@ -1,32 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Heart, Clock, BookOpen, Camera, Star, Award, Bell } from 'lucide-react';
+import { Settings, Heart, Clock, BookOpen, Camera, Award, Bell } from 'lucide-react';
 import StatsCard from '../components/StatsCard';
 import AuthRequired from '../components/AuthRequired';
 import ErrorDisplay from '../components/ErrorDisplay';
 import { useAuth } from '../hooks/useAuth';
-import { useUserData } from '../hooks/useUserData';
 import { userDataService } from '../services/userDataService';
-import { addSampleData } from '../services/sampleData';
 
 const UserProfilePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('favorites');
+  const [activeTab, setActiveTab] = useState('settings');
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
 
-  // Use Firebase authentication and user data
-  const { user, userProfile, loading: authLoading, refreshUserProfile, error: authError } = useAuth();
-  const { 
-    loading: dataLoading, 
-    error: dataError,
-    getFavoriteStoriesWithProgress, 
-    getStoriesWithProgress 
-  } = useUserData(user?.uid || null);
-
-  const loading = authLoading || dataLoading;
-
-  // Get stories with progress info for display
-  const favoriteStoriesWithProgress = getFavoriteStoriesWithProgress();
-  const readingHistoryWithProgress = getStoriesWithProgress();
+  // Use Firebase authentication
+  const { user, userProfile, loading, refreshUserProfile, error: authError } = useAuth();
 
   // Settings state
   const [settings, setSettings] = useState({
@@ -55,23 +41,7 @@ const UserProfilePage: React.FC = () => {
     showToast('Đã cập nhật ảnh đại diện thành công!');
   };
 
-  const handleAddSampleData = async () => {
-    if (!user) return;
-    
-    try {
-      const result = await addSampleData(user.uid);
-      if (result.success) {
-        showToast('Đã thêm dữ liệu mẫu thành công!');
-        // Refresh data
-        window.location.reload();
-      } else {
-        showToast('Có lỗi khi thêm dữ liệu mẫu: ' + result.error);
-      }
-    } catch (error) {
-      console.error('Error adding sample data:', error);
-      showToast('Có lỗi khi thêm dữ liệu mẫu!');
-    }
-  };
+
 
   const handleSaveSettings = async () => {
     if (!user) return;
@@ -137,9 +107,9 @@ if (loading) {
   return (
     <AuthRequired user={user} loading={loading}>
       {/* Error Display */}
-      {(authError || dataError) && (
+      {authError && (
         <ErrorDisplay 
-          error={authError || dataError || 'Đã có lỗi xảy ra'}
+          error={authError || 'Đã có lỗi xảy ra'}
           onRetry={() => window.location.reload()}
           onDismiss={() => {
             // Clear errors by refreshing components
@@ -224,28 +194,6 @@ if (loading) {
           {/* Tab Navigation */}
           <div className="flex overflow-x-auto bg-gray-50 border-b">
             <button 
-              onClick={() => setActiveTab('favorites')}
-              className={`px-8 py-4 font-semibold transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
-                activeTab === 'favorites' 
-                ? 'bg-purple-500 text-white shadow-lg' 
-                : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <Heart size={20} />
-              Yêu thích
-            </button>
-            <button 
-              onClick={() => setActiveTab('history')}
-              className={`px-8 py-4 font-semibold transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
-                activeTab === 'history' 
-                ? 'bg-purple-500 text-white shadow-lg' 
-                : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <Clock size={20} />
-              Lịch sử
-            </button>
-            <button 
               onClick={() => setActiveTab('settings')}
               className={`px-8 py-4 font-semibold transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
                 activeTab === 'settings' 
@@ -260,173 +208,6 @@ if (loading) {
 
           {/* Tab Content */}
           <div className="p-8">
-            {/* Favorites Tab */}
-            {activeTab === 'favorites' && (
-              <div className="animate-fade-in">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                  <Heart className="text-purple-500" size={28} />
-                  Truyện yêu thích
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {favoriteStoriesWithProgress.map((story) => (
-                    <div key={story._id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border hover:border-purple-200">
-                      <div className="aspect-w-3 aspect-h-4 relative overflow-hidden">
-                        <img 
-                          src={story.thumb_url || 'https://via.placeholder.com/300x400/6366f1/ffffff?text=No+Image'} 
-                          alt={story.name}
-                          className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = 'https://via.placeholder.com/300x400/6366f1/ffffff?text=No+Image';
-                          }}
-                        />
-                        <div className="absolute top-3 right-3 bg-black/70 text-white px-2 py-1 rounded-lg text-sm">
-                          ⭐ {story.rating}
-                        </div>
-                        <div className="absolute top-3 left-3">
-                          <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                            story.status === 'completed' 
-                              ? 'bg-green-500 text-white' 
-                              : 'bg-blue-500 text-white'
-                          }`}>
-                            {story.status === 'completed' ? 'Hoàn thành' : 'Đang ra'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="p-6">
-                        <h3 className="font-bold text-lg text-gray-800 mb-2 group-hover:text-purple-600 transition-colors line-clamp-2">
-                          {story.name}
-                        </h3>
-                        <p className="text-gray-600 mb-3 text-sm">
-                          {story.origin_name.join(', ')}
-                        </p>
-                        <div className="space-y-3">
-                          <div className="flex justify-between text-sm text-gray-500">
-                            <span>Tiến độ: {story.readChapters}/{story.totalChapters}</span>
-                            <span>{story.progress}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5">
-                            <div 
-                              className="bg-gradient-to-r from-purple-500 to-blue-500 h-2.5 rounded-full transition-all duration-500"
-                              style={{ width: `${story.progress}%` }}
-                            ></div>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-400">
-                              Đọc lần cuối: {story.lastRead.toLocaleDateString('vi-VN')}
-                            </span>
-                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-xs font-medium">
-                              {story.category[0]?.name}
-                            </span>
-                          </div>
-                        </div>
-                        <button className="w-full mt-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white py-2 rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-200">
-                          Tiếp tục đọc
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {favoriteStoriesWithProgress.length === 0 && (
-                  <div className="text-center py-12">
-                    <Heart className="mx-auto text-gray-300 mb-4" size={48} />
-                    <p className="text-gray-500 text-lg">Chưa có truyện yêu thích nào</p>
-                    <p className="text-gray-400 text-sm mb-6">Hãy thêm những truyện bạn yêu thích để theo dõi dễ dàng hơn</p>
-                    <button 
-                      onClick={handleAddSampleData}
-                      className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
-                    >
-                      Thêm dữ liệu mẫu để test
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* History Tab */}
-            {activeTab === 'history' && (
-              <div className="animate-fade-in">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                  <Clock className="text-blue-500" size={28} />
-                  Lịch sử đọc
-                </h2>
-                <div className="space-y-4">
-                  {readingHistoryWithProgress.map((story) => (
-                    <div key={story._id} className="flex bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border hover:border-blue-200">
-                      <img 
-                        src={story.thumb_url || 'https://via.placeholder.com/96x128/3b82f6/ffffff?text=No+Image'}
-                        alt={story.name}
-                        className="w-24 h-32 object-cover flex-shrink-0"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'https://via.placeholder.com/96x128/3b82f6/ffffff?text=No+Image';
-                        }}
-                      />
-                      <div className="flex-1 p-6">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <h3 className="font-bold text-lg text-gray-800 hover:text-blue-600 transition-colors mb-1">
-                              {story.name}
-                            </h3>
-                            <p className="text-gray-600 text-sm">{story.origin_name.join(', ')}</p>
-                          </div>
-                          <div className="flex flex-col items-end gap-2">
-                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-sm font-medium">
-                              {story.category[0]?.name}
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <Star size={14} className="text-yellow-500 fill-current" />
-                              <span className="text-sm text-gray-600">{story.rating}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm text-gray-500">
-                            <span>Tiến độ: {story.readChapters}/{story.totalChapters}</span>
-                            <span>{story.progress}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full"
-                              style={{ width: `${story.progress}%` }}
-                            ></div>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-400">
-                              Đọc lần cuối: {story.lastRead.toLocaleDateString('vi-VN')}
-                            </span>
-                            <span className={`text-xs px-2 py-1 rounded-lg ${
-                              story.status === 'completed' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-blue-100 text-blue-800'
-                            }`}>
-                              {story.status === 'completed' ? 'Hoàn thành' : 'Đang ra'}
-                            </span>
-                          </div>
-                        </div>
-                        <button className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
-                          Tiếp tục đọc
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {readingHistoryWithProgress.length === 0 && (
-                  <div className="text-center py-12">
-                    <Clock className="mx-auto text-gray-300 mb-4" size={48} />
-                    <p className="text-gray-500 text-lg">Chưa có lịch sử đọc</p>
-                    <p className="text-gray-400 text-sm mb-6">Hãy bắt đầu đọc truyện để xem lịch sử ở đây</p>
-                    <button 
-                      onClick={handleAddSampleData}
-                      className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                    >
-                      Thêm dữ liệu mẫu để test
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="animate-fade-in max-w-2xl">

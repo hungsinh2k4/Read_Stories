@@ -56,3 +56,10 @@ export interface ApiResponse<T> {
     };
   };
 }
+
+export interface Pagination {
+  totalItems: number;
+  totalItemsInPage: number;
+  currentPage: number;
+  pageRange: number;
+}
