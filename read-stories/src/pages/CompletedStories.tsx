@@ -12,7 +12,7 @@ const CompletedStories: React.FC<CompletedStoriesProps> = ({ title }) => {
   const [stories, setStories] = useState<Story[]>([]);
   const [cdnDomain, setCdnDomain] = useState<string>("https://img.otruyenapi.com");
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   // pagination
   const [page, setPage] = useState<number>(1);

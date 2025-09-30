@@ -13,9 +13,11 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { User } from '../types/user';
-
-export interface UserProfile extends Omit<User, 'joinDate'> {
+export interface UserProfile {
+  uid: string;
+  displayName: string;
+  email: string;
+  photoURL: string;
   joinDate: Date;
   settings: {
     notifications: boolean;

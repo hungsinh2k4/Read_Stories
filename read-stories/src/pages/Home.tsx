@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/layout/Navbar';
 import SideBar from '../components/layout/SideBar';
 import NewStoriesSection from '../components/NewStoriesSection';
 import CategorySection from '../components/CategorySection';

@@ -10,7 +10,7 @@ const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otr
   const [activeTab, setActiveTab] = useState('ngay');
 
   // Lấy top 9 truyện cho bảng xếp hạng (có thể sắp xếp theo tiêu chí khác nhau)
-  const rankingData = stories.slice(0, 9).map((story, index) => ({
+  const rankingData = stories.slice(0, 9).map((story) => ({
     id: story._id,
     title: story.name,
     views: Math.floor(Math.random() * 200) + 50, // Mock data cho views

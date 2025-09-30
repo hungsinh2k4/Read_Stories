@@ -20,7 +20,7 @@ const HistoryPage: React.FC = () => {
   const loading = authLoading || dataLoading;
   const readingHistoryWithProgress = getStoriesWithProgress();
 
-  const [removingStoryId, setRemovingStoryId] = useState<string | null>(null);
+  const [removingStoryId] = useState<string | null>(null);
   const [addingToFavorite, setAddingToFavorite] = useState<string | null>(null);
 
   const handleContinueReading = (story: any) => {
@@ -48,7 +48,7 @@ const HistoryPage: React.FC = () => {
     }
   };
 
-  const handleRemoveFromHistory = (storyId: string, storyName: string) => {
+  const handleRemoveFromHistory = (_storyId: string, storyName: string) => {
     // For now, just show a message. In a real app, you'd implement this feature
     alert(`Tính năng xóa lịch sử "${storyName}" sẽ được cập nhật trong phiên bản tới`);
   };

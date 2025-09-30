@@ -1,4 +1,4 @@
-import type { Category, HomeApiResponse, CategoryApiResponse } from '../types/api';
+import type { HomeApiResponse, CategoryApiResponse } from '../types/api';
 
 const API_BASE_URL = 'https://otruyenapi.com/v1/api';
 
