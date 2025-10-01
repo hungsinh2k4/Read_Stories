@@ -1,9 +1,20 @@
-import { defineConfig } from 'vite'
+impo// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  base: process.env.Truyen_Tranh_Vip || '/',
+  server: {
+    historyApiFallback: true,
+    port: 5173,
+  },
+  preview: {
+    port: 5173,
+  },
+})defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: process.env.Truyen_Tranh_Vip || '/',
+  base: process.env.Truyen_Tranh_Vip || '/Read-Stories',
 })
