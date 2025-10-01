@@ -1,7 +1,7 @@
 import Home from './pages/Home';
 import Login from './pages/Login';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './index.css'
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';  
@@ -18,21 +18,46 @@ import HistoryPage from './pages/History';
 import GenrePageWrapper from './pages/GenrePageWrapper';
 import GenresPage from './pages/GenresPage';
 import NotFound from './pages/NotFound';
+import ErrorBoundary from './components/ErrorBoundary';
 function App() {
   const location = useLocation();
   const isReaderPage = location.pathname.includes('/reader');
+  const [domReady, setDomReady] = useState(false);
+
+  // Ensure DOM is ready before rendering
+  useEffect(() => {
+    const timer = setTimeout(() => setDomReady(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Cleanup effect để ngăn DOM conflicts
   useEffect(() => {
+    // Global error handler để catch DOM errors
+    const handleError = (event: ErrorEvent) => {
+      if (event.error?.name === 'NotFoundError' && 
+          event.error?.message?.includes('insertBefore')) {
+        console.warn('Suppressed DOM insertion error:', event.error.message);
+        event.preventDefault();
+        return false;
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    
     return () => {
+      window.removeEventListener('error', handleError);
       // Clear any existing DOM nodes that might conflict
       const existingNodes = document.querySelectorAll('[data-cleanup]');
       existingNodes.forEach(node => node.remove());
     };
   }, [location.pathname]);
   
+  if (!domReady) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <>
+    <ErrorBoundary>
     <AuthProvider>
         {!isReaderPage && <Navbar />}
         <Routes key={location.pathname}>
@@ -55,7 +80,7 @@ function App() {
       </Routes>
       {!isReaderPage && <Footer />}
     </AuthProvider>
-    </>
+    </ErrorBoundary>
   )
 }
 
