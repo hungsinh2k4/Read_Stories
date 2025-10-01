@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../services/firebase";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useAuth } from "../hooks/useAuth";
+import { toast, ToastContainer } from "react-toastify";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -17,7 +18,7 @@ const Login: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user && !authLoading) {
-      navigate("/profile");
+      navigate("/");
     }
   }, [user, authLoading, navigate]);
 
@@ -39,7 +40,12 @@ const Login: React.FC = () => {
     
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/");
+      toast.success("Đăng nhập thành công!");
+      
+      // Delay để toast hiện trước khi navigate
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     } catch (error: any) {
       console.error("Login error:", error);
       
@@ -67,7 +73,12 @@ const Login: React.FC = () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      navigate("/");
+      toast.success("Đăng nhập với Google thành công!");
+      
+      // Delay để toast hiện trước khi navigate
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     } catch (error: any) {
       console.error("Google login error:", error);
       setError("Đăng nhập với Google thất bại!");
@@ -199,6 +210,7 @@ const Login: React.FC = () => {
             </Link>
           </p>
         </div>
+        <ToastContainer />
       </div>
     </div>
   );
