@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, LogIn, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../services/firebase";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
 import { useAuth } from "../hooks/useAuth";
 import { toast, ToastContainer } from "react-toastify";
 
@@ -14,6 +14,26 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Handle Google redirect result
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+          toast.success("Đăng nhập với Google thành công!");
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
+        }
+      } catch (error: any) {
+        console.error("Redirect result error:", error);
+        setError("Đăng nhập với Google thất bại!");
+      }
+    };
+
+    handleRedirectResult();
+  }, [navigate]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -72,16 +92,52 @@ const Login: React.FC = () => {
     
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      toast.success("Đăng nhập với Google thành công!");
       
-      // Delay để toast hiện trước khi navigate
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
+      // Add custom parameters to avoid COOP issues
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
+      let result;
+      
+      try {
+        // Try popup first
+        result = await signInWithPopup(auth, provider);
+      } catch (popupError: any) {
+        // If popup fails, try redirect method
+        if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
+          await signInWithRedirect(auth, provider);
+          return; // Redirect will handle the rest
+        }
+        throw popupError; // Re-throw other errors
+      }
+      
+      // Check if user exists
+      if (result && result.user) {
+        toast.success("Đăng nhập với Google thành công!");
+        
+        // Delay để toast hiện trước khi navigate
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      }
     } catch (error: any) {
       console.error("Google login error:", error);
-      setError("Đăng nhập với Google thất bại!");
+      
+      // Handle specific Firebase Auth errors
+      let errorMessage = "Đăng nhập với Google thất bại!";
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = "Đăng nhập bị hủy bởi người dùng.";
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = "Popup bị chặn. Vui lòng cho phép popup và thử lại.";
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMessage = "Yêu cầu đăng nhập bị hủy.";
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = "Lỗi kết nối mạng. Vui lòng thử lại.";
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -210,8 +266,20 @@ const Login: React.FC = () => {
             </Link>
           </p>
         </div>
-        <ToastContainer />
       </div>
+      
+      {/* Toast Container - moved outside main container */}
+      <ToastContainer 
+        position="top-right" 
+        autoClose={3000} 
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };
