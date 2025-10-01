@@ -20,23 +20,29 @@ const Login: React.FC = () => {
     const handleRedirectResult = async () => {
       try {
         const result = await getRedirectResult(auth);
-        if (result && result.user) {
+        if (result?.user) {
           console.log("Đăng nhập với Google thành công!");
-          navigate("/");
+          // Delay navigation để tránh DOM conflicts
+          setTimeout(() => navigate("/"), 100);
         }
       } catch (error: any) {
         console.error("Redirect result error:", error);
-        setError("Đăng nhập với Google thất bại!");
+        if (error.code !== 'auth/popup-closed-by-user') {
+          setError("Đăng nhập với Google thất bại!");
+        }
       }
     };
 
-    handleRedirectResult();
-  }, [navigate]);
+    // Only run once when component mounts
+    const timer = setTimeout(handleRedirectResult, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
-  // Redirect if already logged in
+  // Redirect if already logged in với delay để tránh conflicts
   useEffect(() => {
     if (user && !authLoading) {
-      navigate("/");
+      const timer = setTimeout(() => navigate("/"), 150);
+      return () => clearTimeout(timer);
     }
   }, [user, authLoading, navigate]);
 
@@ -59,7 +65,8 @@ const Login: React.FC = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Đăng nhập thành công!");
-      navigate("/");
+      // Delay navigation để tránh DOM conflicts
+      setTimeout(() => navigate("/"), 100);
     } catch (error: any) {
       console.error("Login error:", error);
       
@@ -86,13 +93,26 @@ const Login: React.FC = () => {
     
     try {
       const provider = new GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
       
-      // Use redirect method only to avoid COOP issues completely
-      await signInWithRedirect(auth, provider);
-      // Redirect will handle the navigation, no need for manual navigate
+      // Clear any existing auth state trước khi redirect
+      await auth.signOut();
+      
+      // Small delay để DOM ổn định
+      setTimeout(async () => {
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (redirectError: any) {
+          console.error("Redirect error:", redirectError);
+          setError("Không thể chuyển hướng đến Google!");
+          setLoading(false);
+        }
+      }, 200);
+      
     } catch (error: any) {
-      console.error("Google login error:", error);
-      setError("Đăng nhập với Google thất bại!");
+      console.error("Google login setup error:", error);
+      setError("Lỗi khởi tạo đăng nhập Google!");
       setLoading(false);
     }
   };
