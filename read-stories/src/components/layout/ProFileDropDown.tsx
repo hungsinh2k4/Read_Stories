@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { toast, ToastContainer } from 'react-toastify';
+
 
 const ProfileDropdown: React.FC = () => {
   const { user, logout } = useAuth();
@@ -27,16 +27,12 @@ const ProfileDropdown: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success("Đăng xuất thành công!");
+      console.log("Đăng xuất thành công!");
       setIsOpen(false);
-      
-      // Delay để toast hiện trước khi navigate về trang chủ
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
+      navigate("/");
     } catch (error) {
       console.error('Lỗi đăng xuất:', error);
-      toast.error("Đăng xuất thất bại!");
+      alert("Đăng xuất thất bại!");
     }
   };
 
@@ -130,7 +126,6 @@ const ProfileDropdown: React.FC = () => {
           Đăng nhập
         </Link>
       )}
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
     </div>
   );
 };

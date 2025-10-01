@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../services/firebase";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
 import { useAuth } from "../hooks/useAuth";
-import { toast, ToastContainer } from "react-toastify";
+
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -21,10 +21,8 @@ const Login: React.FC = () => {
       try {
         const result = await getRedirectResult(auth);
         if (result && result.user) {
-          toast.success("Đăng nhập với Google thành công!");
-          setTimeout(() => {
-            navigate("/");
-          }, 1000);
+          console.log("Đăng nhập với Google thành công!");
+          navigate("/");
         }
       } catch (error: any) {
         console.error("Redirect result error:", error);
@@ -60,12 +58,8 @@ const Login: React.FC = () => {
     
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast.success("Đăng nhập thành công!");
-      
-      // Delay để toast hiện trước khi navigate
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
+      console.log("Đăng nhập thành công!");
+      navigate("/");
     } catch (error: any) {
       console.error("Login error:", error);
       
@@ -114,12 +108,8 @@ const Login: React.FC = () => {
       
       // Check if user exists
       if (result && result.user) {
-        toast.success("Đăng nhập với Google thành công!");
-        
-        // Delay để toast hiện trước khi navigate
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
+        console.log("Đăng nhập với Google thành công!");
+        navigate("/");
       }
     } catch (error: any) {
       console.error("Google login error:", error);
@@ -267,19 +257,6 @@ const Login: React.FC = () => {
           </p>
         </div>
       </div>
-      
-      {/* Toast Container - moved outside main container */}
-      <ToastContainer 
-        position="top-right" 
-        autoClose={3000} 
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
     </div>
   );
 };

@@ -24,8 +24,8 @@ function App() {
   return (
     <>
     <AuthProvider>
-      {!isReaderPage && <Navbar />}
-      <Routes>
+        {!isReaderPage && <Navbar />}
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
