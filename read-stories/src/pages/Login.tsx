@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, LogIn, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../services/firebase";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useAuth } from "../hooks/useAuth";
 
 
@@ -15,28 +15,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Handle Google redirect result
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result?.user) {
-          console.log("Đăng nhập với Google thành công!");
-          // Delay navigation để tránh DOM conflicts
-          setTimeout(() => navigate("/"), 100);
-        }
-      } catch (error: any) {
-        console.error("Redirect result error:", error);
-        if (error.code !== 'auth/popup-closed-by-user') {
-          setError("Đăng nhập với Google thất bại!");
-        }
-      }
-    };
 
-    // Only run once when component mounts
-    const timer = setTimeout(handleRedirectResult, 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Redirect if already logged in với delay để tránh conflicts
   useEffect(() => {
@@ -93,26 +72,19 @@ const Login: React.FC = () => {
     
     try {
       const provider = new GoogleAuthProvider();
-      provider.addScope('email');
-      provider.addScope('profile');
+      const result = await signInWithPopup(auth, provider);
       
-      // Clear any existing auth state trước khi redirect
-      await auth.signOut();
-      
-      // Small delay để DOM ổn định
-      setTimeout(async () => {
-        try {
-          await signInWithRedirect(auth, provider);
-        } catch (redirectError: any) {
-          console.error("Redirect error:", redirectError);
-          setError("Không thể chuyển hướng đến Google!");
-          setLoading(false);
-        }
-      }, 200);
-      
+      if (result.user) {
+        console.log("Đăng nhập với Google thành công!");
+        setTimeout(() => navigate("/"), 100);
+      }
     } catch (error: any) {
-      console.error("Google login setup error:", error);
-      setError("Lỗi khởi tạo đăng nhập Google!");
+      console.error("Google login error:", error);
+      
+      if (error.code !== 'auth/popup-closed-by-user') {
+        setError("Đăng nhập với Google thất bại!");
+      }
+    } finally {
       setLoading(false);
     }
   };
