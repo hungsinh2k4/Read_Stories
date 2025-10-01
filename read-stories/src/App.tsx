@@ -75,6 +75,8 @@ function App() {
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/genre/:slug" element={<GenrePageWrapper />} />
         <Route path="/genres" element={<GenresPage />} />
+        {/* Explicit 404 route for redirects */}
+        <Route path="/404" element={<NotFound />} />
         {/* Catch all unmatched routes - Must be last */}
         <Route path="*" element={<NotFound />} />
       </Routes>

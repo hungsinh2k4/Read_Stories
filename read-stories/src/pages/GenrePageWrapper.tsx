@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import CategorySection from "../components/CategorySection";
 import { getAllGenres } from "../api/storyApi";
+import NotFound from "./NotFound";
 
 interface GenreData {
   slug: string;
@@ -12,8 +13,9 @@ const GenrePageWrapper: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [genres, setGenres] = useState<GenreData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [genreExists, setGenreExists] = useState<boolean | null>(null);
   
-  // Lấy danh sách thể loại từ API
+  // Lấy danh sách thể loại từ API và check genre tồn tại
   useEffect(() => {
     const loadGenres = async () => {
       try {
@@ -24,15 +26,20 @@ const GenrePageWrapper: React.FC = () => {
           name: category.name
         }));
         setGenres(genreMap);
+        
+        // Check xem slug hiện tại có tồn tại trong danh sách không
+        const exists = genreMap.some(genre => genre.slug === slug);
+        setGenreExists(exists);
       } catch (error) {
         console.error('Error loading genres:', error);
+        setGenreExists(false);
       } finally {
         setLoading(false);
       }
     };
     
     loadGenres();
-  }, []);
+  }, [slug]);
   
   // Tìm title từ API data
   const getGenreTitle = (slug: string): string => {
@@ -69,15 +76,20 @@ const GenrePageWrapper: React.FC = () => {
   }
 
   // Hiển thị loading khi đang lấy dữ liệu thể loại
-  if (loading) {
+  if (loading || genreExists === null) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Đang tải thông tin thể loại...</p>
+          <p className="text-white text-lg">Đang kiểm tra thể loại...</p>
         </div>
       </div>
     );
+  }
+
+  // Nếu genre không tồn tại, hiển thị 404
+  if (genreExists === false) {
+    return <NotFound />;
   }
 
   return (
