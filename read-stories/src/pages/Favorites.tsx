@@ -5,6 +5,7 @@ import AuthRequired from '../components/AuthRequired';
 import ErrorDisplay from '../components/ErrorDisplay';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
+import {toast, ToastContainer} from 'react-toastify';
 
 const FavoritesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const FavoritesPage: React.FC = () => {
       await removeFromFavoritesHook(storyId);
     } catch (error) {
       console.error('Error removing from favorites:', error);
-      alert('Có lỗi khi xóa truyện khỏi danh sách yêu thích');
+      toast.error('Có lỗi khi xóa truyện khỏi danh sách yêu thích');
     } finally {
       setRemovingStoryId(null);
     }
@@ -229,6 +230,7 @@ const FavoritesPage: React.FC = () => {
           )}
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </AuthRequired>
   );
 };

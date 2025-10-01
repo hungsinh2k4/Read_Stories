@@ -1,40 +1,6 @@
-import type { StoryDetails, ApiResponse, ChapterData } from "../types/story";
+import type { StoryDetails, ApiResponse, ChapterData, ChapterContentResponse, SearchApiResponse, GenresApiResponse } from "../types/story";
 
 const API_BASE_URL = 'https://otruyenapi.com/v1/api';
-
-// Interface riêng cho search response vì cấu trúc khác
-interface SearchApiResponse {
-  status: string;
-  message: string;
-  data: {
-    items: StoryDetails[];
-    APP_DOMAIN_CDN_IMAGE: string;
-    params: any;
-    seoOnPage: any;
-    titlePage: string;
-    breadCrumb: any[];
-  };
-}
-
-// Interface cho response của chapter content API
-interface ChapterContentResponse {
-  status: string;
-  message: string;
-  data: {
-    domain_cdn: string;
-    item: {
-      _id: string;
-      comic_name: string;
-      chapter_name: string;
-      chapter_title: string;
-      chapter_path: string;
-      chapter_image: {
-        image_page: number;
-        image_file: string;
-      }[];
-    };
-  };
-}
 
 // Lấy thông tin chi tiết truyện từ slug
 export const fetchStoryDetails = async (storySlug: string): Promise<StoryDetails> => {
@@ -123,4 +89,21 @@ export const searchApi = async (query: string): Promise<SearchApiResponse> => {
     console.error('Error fetching search API:', error);
     throw error;
   } 
+};
+
+export const getAllGenres = async (): Promise<GenresApiResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/the-loai`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch genres');
+    }
+    const apiResponse: GenresApiResponse = await response.json();
+    if (apiResponse.status !== 'success') {
+      throw new Error(apiResponse.message || 'API request failed');
+    }
+    return apiResponse;
+  } catch (error) {
+    console.error('Error fetching all genres:', error);
+    throw error;
+  }
 };

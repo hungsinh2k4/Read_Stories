@@ -5,6 +5,8 @@ import AuthRequired from '../components/AuthRequired';
 import ErrorDisplay from '../components/ErrorDisplay';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
+import { ToastContainer, toast } from 'react-toastify';
+
 
 const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +44,7 @@ const HistoryPage: React.FC = () => {
       );
     } catch (error) {
       console.error('Error adding to favorites:', error);
-      alert('Có lỗi khi thêm vào danh sách yêu thích');
+      toast('Có lỗi khi thêm vào danh sách yêu thích');
     } finally {
       setAddingToFavorite(null);
     }
@@ -50,7 +52,7 @@ const HistoryPage: React.FC = () => {
 
   const handleRemoveFromHistory = (_storyId: string, storyName: string) => {
     // For now, just show a message. In a real app, you'd implement this feature
-    alert(`Tính năng xóa lịch sử "${storyName}" sẽ được cập nhật trong phiên bản tới`);
+    toast(`Tính năng xóa lịch sử "${storyName}" sẽ được cập nhật trong phiên bản tới`);
   };
 
   // Sort by lastRead (most recent first)
@@ -260,6 +262,7 @@ const HistoryPage: React.FC = () => {
               )}
             </div>
           )}
+          <ToastContainer/>
         </div>
       </div>
     </AuthRequired>

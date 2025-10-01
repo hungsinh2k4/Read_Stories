@@ -23,6 +23,25 @@ export interface ChapterData {
   chapter_api_data: string;
 }
 
+export interface ChapterContentResponse {
+  status: string;
+  message: string;
+  data: {
+    domain_cdn: string;
+    item: {
+      _id: string;
+      comic_name: string;
+      chapter_name: string;
+      chapter_title: string;
+      chapter_path: string;
+      chapter_image: {
+        image_page: number;
+        image_file: string;
+      }[];
+    };
+  };
+}
+
 export interface Story {
   _id: string;
   name: string;
@@ -40,6 +59,19 @@ export interface StoryDetails extends Story {
   content: string;
   author: string[];
   chapters: Chapter[];
+}
+
+export interface SearchApiResponse {
+  status: string;
+  message: string;
+  data: {
+    items: StoryDetails[];
+    APP_DOMAIN_CDN_IMAGE: string;
+    params: any;
+    seoOnPage: any;
+    titlePage: string;
+    breadCrumb: any[];
+  };
 }
 
 export interface ApiResponse<T> {
@@ -63,3 +95,12 @@ export interface Pagination {
   currentPage: number;
   pageRange: number;
 }
+
+export interface GenresApiResponse {
+  status: string;
+  message: string;
+  data: {
+    items: Category[];
+  };
+}
+

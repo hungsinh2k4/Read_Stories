@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import type { Story } from '../../types/api';
+import { useAuth } from '../../hooks/useAuth';
+import { useUserData } from '../../hooks/useUserData';
+import { Link } from 'react-router-dom';
 
 interface SideBarProps {
   stories: Story[];
@@ -8,8 +11,12 @@ interface SideBarProps {
 
 const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otruyenapi.com' }) => {
   const [activeTab, setActiveTab] = useState('ngay');
-
+  const { user } = useAuth();
+  const {getStoriesWithProgress } = useUserData(user ? user.uid : null);
   // Lấy top 9 truyện cho bảng xếp hạng (có thể sắp xếp theo tiêu chí khác nhau)
+
+const readingHistoryWithProgress = getStoriesWithProgress();
+
   const rankingData = stories.slice(0, 9).map((story) => ({
     id: story._id,
     title: story.name,
@@ -19,13 +26,14 @@ const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otr
   }));
 
   // Lấy 2 truyện gần đây (có thể từ localStorage hoặc state)
-  const recentStories = stories.slice(0, 2).map(story => ({
+  const recentStories = readingHistoryWithProgress.slice(0, 2).map(story => ({
     id: story._id,
     title: story.name,
     chapter: story.chaptersLatest?.[0] ? `Chương ${story.chaptersLatest[0].chapter_name}` : 'Chương 1',
-    image: `${cdnDomain}/uploads/comics/${story.thumb_url}`,
+    image: `${story.thumb_url}`,
     slug: story.slug
   }));
+  console.log(recentStories);
 
   return (
     <div className="w-80 space-y-6">
@@ -62,6 +70,7 @@ const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otr
         {/* Ranking List */}
         <div className="space-y-2">
           {rankingData.map((item, index) => (
+            <Link to={`/story/${item.slug}`} key={item.id}>
             <div key={item.id} className="flex items-center space-x-3 p-2 hover:bg-gray-700 rounded transition-colors cursor-pointer">
               <span className="text-gray-400 font-bold text-sm w-6">{index + 1}</span>
               <div className="w-12 h-16 bg-gray-600 rounded flex-shrink-0 overflow-hidden">
@@ -86,6 +95,7 @@ const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otr
                 </div>
               </div>
             </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -96,13 +106,17 @@ const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otr
           <svg className="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          <h3 className="text-lg font-bold text-white">TRUYỆN XEM GẦN ĐÂY</h3>
+          <h3 className="text-lg font-bold text-white">TRUYỆN ĐỌC GẦN ĐÂY</h3>
         </div>
 
         {/* Recent Stories List */}
         <div className="space-y-2">
+          {recentStories.length === 0 && (
+            <p className="text-gray-400 text-sm">Chưa có truyện nào được đọc gần đây.</p>
+          )}
           {recentStories.map((item) => (
-            <div key={item.id} className="flex items-center space-x-3 p-2 hover:bg-gray-700 rounded transition-colors cursor-pointer">
+            <Link to={`/story/${item.slug}`} key={item.id}>
+            <div className="flex items-center space-x-3 p-2 hover:bg-gray-700 rounded transition-colors cursor-pointer">
               <div className="w-12 h-16 bg-gray-600 rounded flex-shrink-0 overflow-hidden">
                 <img 
                   src={item.image} 
@@ -119,6 +133,7 @@ const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otr
                 <p className="text-gray-400 text-xs mt-1">{item.chapter}</p>
               </div>
             </div>
+            </Link>
           ))}
         </div>
       </div>

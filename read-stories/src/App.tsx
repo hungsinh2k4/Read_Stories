@@ -14,6 +14,8 @@ import ChapterReader from './components/ChapterReader';
 import SearchPage from './pages/Search';
 import FavoritesPage from './pages/Favorites';
 import HistoryPage from './pages/History';
+import GenrePageWrapper from './pages/GenrePageWrapper';
+import GenresPage from './pages/GenresPage';
 function App() {
   const location = useLocation();
   const isReaderPage = location.pathname.includes('/chapter');
@@ -33,8 +35,10 @@ function App() {
         <Route path="/story/:storySlug/chapter/:chapterFilename" element={<ChapterReader />} />
         <Route path="/story/:storySlug/chapter" element={<ChapterReader />} />
         <Route path="/search" element={<SearchPage />} />
-        <Route path="/favorite" element={<FavoritesPage />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/history" element={<HistoryPage />} />
+        <Route path="/genre/:slug" element={<GenrePageWrapper />} />
+        <Route path="/genres" element={<GenresPage />} />
       </Routes>
       {!isReaderPage && <Footer />}
     </AuthProvider>

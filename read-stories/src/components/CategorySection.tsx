@@ -38,9 +38,19 @@ const CategorySection: React.FC<CategorySectionProps> = ({ slug, title, page = 1
       active = false;
     };
   }, [slug, page]);
-
-  if (loading || error) {
-    return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl">Đang tải...</div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-red-400 text-xl">{error}</div>
+      </div>
+    );
   }
 
   if (stories.length === 0) {

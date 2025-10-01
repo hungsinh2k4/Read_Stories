@@ -14,6 +14,7 @@ import { fetchStoryDetails } from '../api/storyApi';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
 import type { StoryDetails } from '../types/story';
+import { toast, ToastContainer } from 'react-toastify';
 
 const StoryDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -63,8 +64,10 @@ const StoryDetailPage: React.FC = () => {
 
   const handleToggleFavorite = async () => {
     if (!user || !story) {
-      alert('Vui lòng đăng nhập để thêm vào yêu thích');
-      navigate('/login');
+      toast.warning('Vui lòng đăng nhập để thêm vào yêu thích');
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
       return;
     }
 
@@ -86,7 +89,7 @@ const StoryDetailPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      alert('Có lỗi xảy ra khi cập nhật yêu thích');
+      toast.error('Có lỗi xảy ra khi cập nhật yêu thích');
     } finally {
       setActionLoading(false);
     }
@@ -94,8 +97,10 @@ const StoryDetailPage: React.FC = () => {
 
   const handleToggleBookmark = async () => {
     if (!user || !story) {
-      alert('Vui lòng đăng nhập để lưu truyện');
-      navigate('/login');
+      toast.warning('Vui lòng đăng nhập để lưu truyện');
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
       return;
     }
 
@@ -115,11 +120,11 @@ const StoryDetailPage: React.FC = () => {
       } catch (err) {
         // Fallback to clipboard
         navigator.clipboard.writeText(window.location.href);
-        alert('Đã copy link truyện vào clipboard!');
+        toast.success('Đã copy link truyện vào clipboard!');
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Đã copy link truyện vào clipboard!');
+      toast.success('Đã copy link truyện vào clipboard!');
     }
   };
 
@@ -426,6 +431,7 @@ const StoryDetailPage: React.FC = () => {
             )}
           </div>
         )}
+      <ToastContainer position="top-right" autoClose={3000}/>
       </div>
     </div>
   );

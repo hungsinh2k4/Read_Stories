@@ -1,9 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import ProfileDropdown from "./ProFileDropDown";
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -16,6 +18,15 @@ const Navbar = () => {
     }
   };
 
+  // Danh sách thể loại với slug phù hợp
+  const genres = [
+    { name: "Hành động", slug: "action" },
+    { name: "Ngôn tình", slug: "ngon-tinh" },
+    { name: "Drama", slug: "drama" },
+    { name: "Adult", slug: "adult" },
+    { name: "Anime", slug: "anime" },
+    { name: "Chuyển sinh", slug: "chuyen-sinh" },
+  ];
 
   return (
     <nav className="bg-gray-900 text-white px-4 py-3 shadow-lg">
@@ -67,40 +78,65 @@ const Navbar = () => {
           <Link to="/completed" className="hover:text-green-400 transition-colors font-medium">
             Hoàn Thành
           </Link>
-
-          {/* Dropdown Thể loại */}
-          <div className="relative group">
-            <button className="hover:text-green-400 transition-colors flex items-center font-medium">
+          {/* Improved Dropdown Thể loại */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsGenreDropdownOpen(!isGenreDropdownOpen)}
+              onMouseEnter={() => setIsGenreDropdownOpen(true)}
+              className="hover:text-green-400 transition-colors flex items-center font-medium group"
+            >
               Thể Loại
-              <svg
-                className="w-4 h-4 ml-1 transition-transform group-hover:rotate-180"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronDown 
+                size={16} 
+                className={`ml-1 transition-transform duration-200 ${
+                  isGenreDropdownOpen ? 'rotate-180' : ''
+                }`} 
+              />
             </button>
 
-            <div className="absolute top-full left-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <div className="py-2">
-                <Link to="/genre/action" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  Hành động
-                </Link>
-                <Link to="/genre/romance" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  Lãng mạn
-                </Link>
-                <Link to="/genre/comedy" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  Hài hước
-                </Link>
-                <Link to="/genre/horror" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                  Kinh dị
-                </Link>
-                <Link to="/genres" className="block px-4 py-2 text-sm text-green-400 hover:bg-gray-700 hover:text-green-300 transition-colors border-t border-gray-700">
-                  Xem tất cả
-                </Link>
+            {/* Improved Dropdown Menu */}
+            {isGenreDropdownOpen && (
+              <div 
+                className="absolute top-full left-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 animate-fade-in"
+                onMouseLeave={() => setIsGenreDropdownOpen(false)}
+              >
+                {/* Dropdown Header */}
+                <div className="px-4 py-3 border-b border-gray-700 bg-gray-750 rounded-t-lg">
+                  <h3 className="text-sm font-semibold text-green-400">Chọn thể loại</h3>
+                </div>
+
+                {/* Genre Grid */}
+                <div className="grid grid-cols-2 gap-1 p-2 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600">
+                  {genres.map((genre) => (
+                    <Link
+                      key={genre.slug}
+                      to={`/genre/${genre.slug}`}
+                      onClick={() => setIsGenreDropdownOpen(false)}
+                      className="block px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-green-400 transition-colors rounded-md"
+                    >
+                      {genre.name}
+                    </Link>
+                  ))}
+                </div>
+                <div className="border-t border-gray-700 p-2">
+                  <Link
+                    to="/genres"
+                    onClick={() => setIsGenreDropdownOpen(false)}
+                    className="block w-full text-center px-3 py-2 text-sm text-green-400 hover:bg-gray-700 transition-colors rounded-md font-medium"
+                  >
+                    Xem tất cả thể loại →
+                  </Link>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Backdrop to close dropdown */}
+            {isGenreDropdownOpen && (
+              <div 
+                className="fixed inset-0 z-40"
+                onClick={() => setIsGenreDropdownOpen(false)}
+              />
+            )}
           </div>
 
           {/* Profile Dropdown */}
