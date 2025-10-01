@@ -14,10 +14,11 @@ const firebaseConfig = {
   messagingSenderId: '588151717260',
   appId: '1:588151717260:web:a63f91e202b9d5415a6aa9',
   measurementId: 'G-MNYG3T2NYN'
+  
 };
 
 const app = initializeApp(firebaseConfig);
-console.log("Firebase initialized with config:", firebaseConfig);
+// console.log("Firebase initialized with config:", firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const analytics = getAnalytics(app);
