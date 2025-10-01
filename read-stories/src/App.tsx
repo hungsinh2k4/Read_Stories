@@ -16,6 +16,7 @@ import FavoritesPage from './pages/Favorites';
 import HistoryPage from './pages/History';
 import GenrePageWrapper from './pages/GenrePageWrapper';
 import GenresPage from './pages/GenresPage';
+import NotFound from './pages/NotFound';
 function App() {
   const location = useLocation();
   const isReaderPage = location.pathname.includes('/chapter');
@@ -39,6 +40,8 @@ function App() {
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/genre/:slug" element={<GenrePageWrapper />} />
         <Route path="/genres" element={<GenresPage />} />
+        {/* Catch all unmatched routes - Must be last */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
       {!isReaderPage && <Footer />}
     </AuthProvider>

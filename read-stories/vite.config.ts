@@ -1,20 +1,13 @@
-impo// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  base: process.env.Truyen_Tranh_Vip || '/',
-  server: {
-    historyApiFallback: true,
-    port: 5173,
-  },
-  preview: {
-    port: 5173,
-  },
-})defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  base: process.env.Truyen_Tranh_Vip || '/Read-Stories',
+export default defineConfig(({ mode }) => {
+  // load biến từ file .env
+  const env = loadEnv(mode, process.cwd(), '')
+
+  return {
+    plugins: [react(), tailwindcss()],
+    base: env.VITE_TRUYEN_TRANH_VIP || '/Read-Stories',
+  }
 })
