@@ -1,6 +1,7 @@
 import Home from './pages/Home';
 import Login from './pages/Login';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import './index.css'
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';  
@@ -19,13 +20,22 @@ import GenresPage from './pages/GenresPage';
 import NotFound from './pages/NotFound';
 function App() {
   const location = useLocation();
-  const isReaderPage = location.pathname.includes('/chapter');
-
+  const isReaderPage = location.pathname.includes('/reader');
+  
+  // Cleanup effect để ngăn DOM conflicts
+  useEffect(() => {
+    return () => {
+      // Clear any existing DOM nodes that might conflict
+      const existingNodes = document.querySelectorAll('[data-cleanup]');
+      existingNodes.forEach(node => node.remove());
+    };
+  }, [location.pathname]);
+  
   return (
     <>
     <AuthProvider>
         {!isReaderPage && <Navbar />}
-        <Routes>
+        <Routes key={location.pathname}>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
