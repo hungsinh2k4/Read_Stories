@@ -5,5 +5,14 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: process.env.VITE_TRUYEN_TRANH_VIP || '/Read-Stories',
+  base: process.env.VITE_TRUYEN_TRANH_VIP || '/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
 })
