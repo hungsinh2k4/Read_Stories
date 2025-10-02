@@ -53,7 +53,7 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
     };
 
     loadStoryData();
-  }, [storySlug, chapterFilename]);
+  }, [window.scroll(0,0),storySlug, chapterFilename]);
 
   // Load nội dung chapter
   const loadChapterContent = async (chapterApiData: string) => {
