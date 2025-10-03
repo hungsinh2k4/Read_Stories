@@ -18,6 +18,14 @@ const Register: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+      const timer = setTimeout(() => {
+        setPageLoading(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }, []);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -81,6 +89,14 @@ const Register: React.FC = () => {
       setLoading(false);
     }
   };
+
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl">Đang tải...</div>
+      </div>
+    );
+  }
 
   const handleGoogleRegister = async () => {
     setError("");

@@ -14,8 +14,15 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [pageLoading, setPageLoading] = useState(true);
 
-
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Redirect if already logged in với delay để tránh conflicts
   useEffect(() => {
@@ -88,6 +95,15 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Loading screen khi trang đang load
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl">Đang tải...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">

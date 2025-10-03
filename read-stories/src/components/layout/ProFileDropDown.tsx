@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 const ProfileDropdown: React.FC = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Đóng dropdown khi click bên ngoài
@@ -25,19 +26,37 @@ const ProfileDropdown: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
+    setLogoutLoading(true);
     try {
       await logout();
       console.log("Đăng xuất thành công!");
       setIsOpen(false);
-      navigate("/");
+      // Delay navigation để hiển thị loading
+      setTimeout(() => {
+        navigate("/");
+        setLogoutLoading(false);
+      }, 500);
     } catch (error) {
       console.error('Lỗi đăng xuất:', error);
       alert("Đăng xuất thất bại!");
+      setLogoutLoading(false);
     }
   };
 
+
   return (
-    <div className="relative" ref={dropdownRef}>
+    <>
+      {/* Loading overlay khi đang logout */}
+      {logoutLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <div className="bg-gray-800 rounded-lg p-6 text-center">
+            <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white text-lg">Đang đăng xuất...</p>
+          </div>
+        </div>
+      )}
+      
+      <div className="relative" ref={dropdownRef}>
       {user ? (
         <>
           {/* Avatar button */}
@@ -103,12 +122,17 @@ const ProfileDropdown: React.FC = () => {
                 <div className="border-t border-gray-700 mt-1">
                   <button
                     onClick={handleLogout}
-                    className="flex items-center w-full px-4 py-3 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 transition-colors"
+                    disabled={logoutLoading}
+                    className="flex items-center w-full px-4 py-3 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    Đăng xuất
+                    {logoutLoading ? (
+                      <div className="w-4 h-4 mr-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    )}
+                    {logoutLoading ? 'Đang đăng xuất...' : 'Đăng xuất'}
                   </button>
                 </div>
               </div>
@@ -126,7 +150,8 @@ const ProfileDropdown: React.FC = () => {
           Đăng nhập
         </Link>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
