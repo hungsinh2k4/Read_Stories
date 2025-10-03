@@ -47,6 +47,10 @@ const CompletedStories: React.FC<CompletedStoriesProps> = ({ title }) => {
     };
   }, [page]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [page]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
