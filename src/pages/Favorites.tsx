@@ -3,15 +3,16 @@ import { Heart, BookOpen, Clock, Trash2, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthRequired from '../components/AuthRequired';
 import ErrorDisplay from '../components/ErrorDisplay';
+import { FavoritesSkeleton } from '../components/skeletons';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
-import {toast, ToastContainer} from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 const FavoritesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, error: authError } = useAuth();
-  const { 
-    loading: dataLoading, 
+  const {
+    loading: dataLoading,
     error: dataError,
     getFavoriteStoriesWithProgress,
     removeFromFavorites: removeFromFavoritesHook
@@ -64,17 +65,13 @@ const FavoritesPage: React.FC = () => {
           </div>
 
           {/* Loading */}
-          {loading && (
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-400"></div>
-            </div>
-          )}
+          {loading && <FavoritesSkeleton />}
 
           {/* Error */}
           {(authError || dataError) && (
-            <ErrorDisplay 
-              error={authError || dataError || ''} 
-              onRetry={() => window.location.reload()} 
+            <ErrorDisplay
+              error={authError || dataError || ''}
+              onRetry={() => window.location.reload()}
             />
           )}
 
@@ -85,15 +82,15 @@ const FavoritesPage: React.FC = () => {
                 <div className="grid gap-6">
                   {favoriteStoriesWithProgress.map((story) => {
                     const isRemoving = removingStoryId === story._id;
-                    
+
                     return (
-                      <div 
-                        key={story._id} 
+                      <div
+                        key={story._id}
                         className="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors"
                       >
                         <div className="flex gap-4">
                           {/* Story Image */}
-                          <Link 
+                          <Link
                             to={`/story/${story.slug}`}
                             className="flex-shrink-0"
                           >
@@ -110,7 +107,7 @@ const FavoritesPage: React.FC = () => {
 
                           {/* Story Info */}
                           <div className="flex-1">
-                            <Link 
+                            <Link
                               to={`/story/${story.slug}`}
                               className="block"
                             >
@@ -124,7 +121,7 @@ const FavoritesPage: React.FC = () => {
                                 <BookOpen size={16} />
                                 <span className="text-sm">{story.status}</span>
                               </div>
-                              
+
                               {story.readChapters > 0 && (
                                 <div className="flex items-center gap-1 text-blue-400">
                                   <Clock size={16} />
@@ -159,10 +156,10 @@ const FavoritesPage: React.FC = () => {
                                   </span>
                                 </div>
                                 <div className="w-full bg-gray-700 rounded-full h-2">
-                                  <div 
+                                  <div
                                     className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                                    style={{ 
-                                      width: `${Math.round(story.progress)}%` 
+                                    style={{
+                                      width: `${Math.round(story.progress)}%`
                                     }}
                                   ></div>
                                 </div>
@@ -189,7 +186,7 @@ const FavoritesPage: React.FC = () => {
                                 Đọc truyện
                               </button>
                             )}
-                            
+
                             <button
                               onClick={() => handleRemoveFromFavorites(story._id, story.name)}
                               disabled={isRemoving}

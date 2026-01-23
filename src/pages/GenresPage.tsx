@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Tag, BookOpen, TrendingUp } from 'lucide-react';
 import { getAllGenres } from '../api/storyApi';
+import { GenresSkeleton } from '../components/skeletons';
 
 interface Genre {
   _id: string;
@@ -20,9 +21,9 @@ const GenresPage: React.FC = () => {
         setLoading(true);
         const genresData = await getAllGenres();
         setGenres(genresData.data.items.map(category => ({
-  ...category,
-  _id: category.id || category.slug || `genre-${Date.now()}-${Math.random()}` // Use existing ID or generate one
-})));
+          ...category,
+          _id: category.id || category.slug || `genre-${Date.now()}-${Math.random()}` // Use existing ID or generate one
+        })));
       } catch (err) {
         console.error('Error loading genres:', err);
         setError('Không thể tải danh sách thể loại');
@@ -35,14 +36,7 @@ const GenresPage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Đang tải thể loại...</p>
-        </div>
-      </div>
-    );
+    return <GenresSkeleton />;
   }
 
   if (error) {
@@ -53,7 +47,7 @@ const GenresPage: React.FC = () => {
             <span className="text-white text-2xl">!</span>
           </div>
           <p className="text-red-400 text-lg mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg transition-colors"
           >
@@ -66,7 +60,7 @@ const GenresPage: React.FC = () => {
 
   // Các thể loại nổi bật (có thể hardcode hoặc lấy từ API)
   const featuredGenres = ['hanh-dong', 'ngon-tinh', 'drama', 'shounen'];
-  
+
   const getFeaturedGenres = () => {
     return genres.filter(genre => featuredGenres.includes(genre.slug));
   };
@@ -78,11 +72,10 @@ const GenresPage: React.FC = () => {
   const GenreCard: React.FC<{ genre: Genre; featured?: boolean }> = ({ genre, featured = false }) => (
     <Link
       to={`/genre/${genre.slug}`}
-      className={`block p-6 rounded-xl border transition-all duration-300 hover:scale-105 hover:shadow-xl ${
-        featured
-          ? 'bg-gradient-to-r from-purple-600 to-blue-600 border-purple-500 text-white'
-          : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-purple-500'
-      }`}
+      className={`block p-6 rounded-xl border transition-all duration-300 hover:scale-105 hover:shadow-xl ${featured
+        ? 'bg-gradient-to-r from-purple-600 to-blue-600 border-purple-500 text-white'
+        : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-purple-500'
+        }`}
     >
       <div className="flex items-center gap-3 mb-3">
         <Tag size={24} className={featured ? 'text-white' : 'text-purple-400'} />
@@ -144,7 +137,7 @@ const GenresPage: React.FC = () => {
             <Tag className="text-purple-400" size={28} />
             Tất cả thể loại
           </h2>
-          
+
           {getOtherGenres().length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {getOtherGenres().map((genre) => (

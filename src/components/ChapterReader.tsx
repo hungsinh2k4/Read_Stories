@@ -2,18 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, List, X, Home } from 'lucide-react';
 import { fetchStoryDetails, fetchChapterContent, getChapterList, findChapterByFilename, getAdjacentChapter } from '../api/storyApi';
+import { ChapterReaderSkeleton } from './skeletons';
 import type { StoryDetails, ChapterData } from '../types/story';
 
-interface ChapterReaderProps {}
+interface ChapterReaderProps { }
 
 const ChapterReader: React.FC<ChapterReaderProps> = () => {
   const { storySlug, chapterFilename } = useParams<{
     storySlug: string;
     chapterFilename: string;
   }>();
-  
+
   const navigate = useNavigate();
-  
+
   const [storyDetails, setStoryDetails] = useState<StoryDetails | null>(null);
   const [currentChapter, setCurrentChapter] = useState<ChapterData | null>(null);
   const [chapterImages, setChapterImages] = useState<string[]>([]);
@@ -26,15 +27,15 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
   useEffect(() => {
     const loadStoryData = async () => {
       if (!storySlug) return;
-      
+
       try {
         setLoading(true);
         const story = await fetchStoryDetails(storySlug);
         setStoryDetails(story);
-        
+
         const chapterList = getChapterList(story);
         setChapters(chapterList);
-        
+
         // Nếu không có chapterFilename, chọn chapter đầu tiên
         const targetFilename = chapterFilename || (chapterList[0]?.filename);
         if (targetFilename) {
@@ -53,7 +54,7 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
     };
 
     loadStoryData();
-  }, [window.scroll(0,0),storySlug, chapterFilename]);
+  }, [window.scroll(0, 0), storySlug, chapterFilename]);
 
   // Load nội dung chapter
   const loadChapterContent = async (chapterApiData: string) => {
@@ -74,7 +75,7 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
     setCurrentChapter(chapter);
     setShowChapterList(false);
     await loadChapterContent(chapter.chapter_api_data);
-    
+
     // Update URL
     navigate(`/story/${storySlug}/chapter/${chapter.filename}`, { replace: true });
   };
@@ -117,11 +118,7 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
   }, [currentChapter, chapters]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-lg">Đang tải...</div>
-      </div>
-    );
+    return <ChapterReaderSkeleton />;
   }
 
   if (error) {
@@ -156,7 +153,7 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
               </p>
             </div>
           </div>
-          
+
           <button
             onClick={() => setShowChapterList(true)}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
@@ -196,7 +193,7 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
               <p>Không có nội dung để hiển thị</p>
             </div>
           )}
-          
+
           {chapterImages.map((imageUrl, index) => (
             <div key={index} className="mb-2">
               <img
@@ -232,7 +229,7 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
             <ChevronLeft size={20} />
             Chương trước
           </button>
-          
+
           <button
             onClick={goToNextChapter}
             disabled={!nextChapter}
@@ -258,17 +255,16 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-2">
               {chapters.map((chapter, index) => (
                 <button
                   key={chapter.filename}
                   onClick={() => navigateToChapter(chapter)}
-                  className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
-                    currentChapter?.filename === chapter.filename
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                  }`}
+                  className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${currentChapter?.filename === chapter.filename
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    }`}
                 >
                   <div className="font-medium">Chương {index + 1}</div>
                   <div className="text-sm opacity-80 truncate">
@@ -278,9 +274,9 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
               ))}
             </div>
           </div>
-          
+
           {/* Backdrop để đóng modal */}
-          <div 
+          <div
             className="flex-1 cursor-pointer"
             onClick={() => setShowChapterList(false)}
           />
