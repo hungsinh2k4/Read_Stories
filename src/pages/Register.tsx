@@ -3,13 +3,13 @@ import { Eye, EyeOff, UserPlus, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../services/firebase";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { useAuth } from "../hooks/useAuth";
+import { useAuthContext } from "../contexts/AuthContext";
 import { userDataService } from "../services/userDataService";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  
+  const { user } = useAuthContext();
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,11 +21,11 @@ const Register: React.FC = () => {
   const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
-      const timer = setTimeout(() => {
-        setPageLoading(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }, []);
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -57,7 +57,7 @@ const Register: React.FC = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
+
       // Create user profile in Firestore
       await userDataService.createOrUpdateUserProfile(user.uid, {
         displayName: username,
@@ -74,7 +74,7 @@ const Register: React.FC = () => {
       navigate("/");
     } catch (error: any) {
       console.error("Register error:", error);
-      
+
       let errorMessage = "Đăng ký thất bại!";
       if (error.code === 'auth/email-already-in-use') {
         errorMessage = "Email đã được sử dụng!";
@@ -83,7 +83,7 @@ const Register: React.FC = () => {
       } else if (error.code === 'auth/weak-password') {
         errorMessage = "Mật khẩu quá yếu!";
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -101,12 +101,12 @@ const Register: React.FC = () => {
   const handleGoogleRegister = async () => {
     setError("");
     setLoading(true);
-    
+
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
+
       // Create user profile in Firestore
       await userDataService.createOrUpdateUserProfile(user.uid, {
         displayName: user.displayName || "",
@@ -161,7 +161,7 @@ const Register: React.FC = () => {
               placeholder="Nhập tên đăng nhập"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Email
@@ -175,7 +175,7 @@ const Register: React.FC = () => {
               placeholder="Nhập email của bạn"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Mật khẩu
@@ -281,8 +281,8 @@ const Register: React.FC = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-sm">
             Đã có tài khoản?{' '}
-            <Link 
-              to="/login" 
+            <Link
+              to="/login"
               className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
             >
               Đăng nhập ngay

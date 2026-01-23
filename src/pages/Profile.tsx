@@ -4,8 +4,8 @@ import StatsCard from '../components/StatsCard';
 import AuthRequired from '../components/AuthRequired';
 import ErrorDisplay from '../components/ErrorDisplay';
 import { ProfileSkeleton } from '../components/skeletons';
-import { useAuth } from '../hooks/useAuth';
-import { useUserData } from '../hooks/useUserData';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useUserDataContext } from '../contexts/UserDataContext';
 import { userDataService } from '../services/userDataService';
 
 const UserProfilePage: React.FC = () => {
@@ -14,14 +14,14 @@ const UserProfilePage: React.FC = () => {
   const [notificationMessage, setNotificationMessage] = useState('');
 
   // Use Firebase authentication
-  const { user, userProfile, loading, refreshUserProfile, error: authError } = useAuth();
+  const { user, userProfile, loading, refreshUserProfile, error: authError } = useAuthContext();
 
   // ✅ Get real data from Firebase
   const {
     favoriteStories,
     readingHistory,
     loading: dataLoading
-  } = useUserData(user?.uid || null);
+  } = useUserDataContext();
 
   // ✅ Calculate real stats from Firebase data
   const stats = {

@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import './index.css';
 import { AuthProvider } from './contexts/AuthContext';
+import { UserDataProvider } from './contexts/UserDataContext';
 import { MainLayout, ReaderLayout } from './layouts';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -60,31 +61,33 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <Routes key={location.pathname}>
-          {/* Routes với MainLayout (có Navbar + Footer) */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/new" element={<NewStories />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/completed" element={<CompletedStories />} />
-            <Route path="/story/:slug" element={<StoryDetailPage />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/favorites" element={<FavoritesPage />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="/genre/:slug" element={<GenrePageWrapper />} />
-            <Route path="/genres" element={<GenresPage />} />
-            <Route path="/404" element={<NotFound />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
+        <UserDataProvider>
+          <Routes key={location.pathname}>
+            {/* Routes với MainLayout (có Navbar + Footer) */}
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/new" element={<NewStories />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/completed" element={<CompletedStories />} />
+              <Route path="/story/:slug" element={<StoryDetailPage />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/favorites" element={<FavoritesPage />} />
+              <Route path="/history" element={<HistoryPage />} />
+              <Route path="/genre/:slug" element={<GenrePageWrapper />} />
+              <Route path="/genres" element={<GenresPage />} />
+              <Route path="/404" element={<NotFound />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
 
-          {/* Routes với ReaderLayout (không có Navbar/Footer) */}
-          <Route element={<ReaderLayout />}>
-            <Route path="/story/:storySlug/chapter/:chapterFilename" element={<ChapterReader />} />
-            <Route path="/story/:storySlug/chapter" element={<ChapterReader />} />
-          </Route>
-        </Routes>
+            {/* Routes với ReaderLayout (không có Navbar/Footer) */}
+            <Route element={<ReaderLayout />}>
+              <Route path="/story/:storySlug/chapter/:chapterFilename" element={<ChapterReader />} />
+              <Route path="/story/:storySlug/chapter" element={<ChapterReader />} />
+            </Route>
+          </Routes>
+        </UserDataProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

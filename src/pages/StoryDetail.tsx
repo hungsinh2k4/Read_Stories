@@ -11,8 +11,8 @@ import {
   Bookmark
 } from 'lucide-react';
 import { fetchStoryDetails } from '../api/storyApi';
-import { useAuth } from '../hooks/useAuth';
-import { useUserData } from '../hooks/useUserData';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useUserDataContext } from '../contexts/UserDataContext';
 import { StoryDetailSkeleton } from '../components/skeletons';
 import type { StoryDetails } from '../types/story';
 import { toast, ToastContainer } from 'react-toastify';
@@ -20,13 +20,13 @@ import { toast, ToastContainer } from 'react-toastify';
 const StoryDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const {
     addReadingProgress,
     addToFavorites,
     removeFromFavorites,
     isStoryFavorite
-  } = useUserData(user?.uid || null);
+  } = useUserDataContext();
 
   const [story, setStory] = useState<StoryDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,7 @@ const StoryDetailPage: React.FC = () => {
         console.error('Error fetching story:', err);
         setError(err instanceof Error ? err.message : 'Đã có lỗi xảy ra');
       } finally {
-        // setLoading(false);
+        setLoading(false);
       }
     };
     scrollTo(0, 0);

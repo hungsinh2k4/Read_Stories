@@ -3,14 +3,14 @@ import { Eye, EyeOff, LogIn, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../services/firebase";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { useAuth } from "../hooks/useAuth";
+import { useAuthContext } from "../contexts/AuthContext";
 
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuthContext();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -47,7 +47,7 @@ const Login: React.FC = () => {
     }
 
     setLoading(true);
-    
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Đăng nhập thành công!");
@@ -55,7 +55,7 @@ const Login: React.FC = () => {
       setTimeout(() => navigate("/"), 100);
     } catch (error: any) {
       console.error("Login error:", error);
-      
+
       let errorMessage = "Đăng nhập thất bại!";
       if (error.code === 'auth/user-not-found') {
         errorMessage = "Tài khoản không tồn tại!";
@@ -66,7 +66,7 @@ const Login: React.FC = () => {
       } else if (error.code === 'auth/too-many-requests') {
         errorMessage = "Quá nhiều lần thử. Vui lòng thử lại sau!";
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -76,18 +76,18 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     setError("");
     setLoading(true);
-    
+
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      
+
       if (result.user) {
         console.log("Đăng nhập với Google thành công!");
         setTimeout(() => navigate("/"), 100);
       }
     } catch (error: any) {
       console.error("Google login error:", error);
-      
+
       if (error.code !== 'auth/popup-closed-by-user') {
         setError("Đăng nhập với Google thất bại!");
       }
@@ -137,7 +137,7 @@ const Login: React.FC = () => {
               placeholder="Nhập email của bạn"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Mật khẩu
@@ -220,8 +220,8 @@ const Login: React.FC = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-sm">
             Chưa có tài khoản?{' '}
-            <Link 
-              to="/register" 
+            <Link
+              to="/register"
               className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
             >
               Đăng ký ngay

@@ -2,11 +2,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ChevronDown, Menu, X, Search, User, Heart, Clock, LogOut, LogIn } from "lucide-react";
 import ProfileDropdown from "./ProFileDropDown";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 // Mobile Profile Section - inline menu for mobile
 const MobileProfileSection = ({ onClose }: { onClose: () => void }) => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthContext();
   const navigate = useNavigate();
   const [logoutLoading, setLogoutLoading] = useState(false);
 
