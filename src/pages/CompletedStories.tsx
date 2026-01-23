@@ -31,8 +31,11 @@ const CompletedStories: React.FC<CompletedStoriesProps> = ({ title }) => {
         setStories(res.data.items || []);
         if (res.data.APP_DOMAIN_CDN_IMAGE) setCdnDomain(res.data.APP_DOMAIN_CDN_IMAGE);
 
-        // nếu API có trả về tổng số trang thì lấy
-        setTotalPages(res.data.params && (res.data.params as any).pagination?.totalPages || 10); // fallback 10
+        // Tính totalPages từ totalItems / itemsPerPage
+        const pagination = res.data.params && (res.data.params as any).pagination;
+        const totalItems = pagination?.totalItems || 0;
+        const itemsPerPage = pagination?.totalItemsPerPage || 24;
+        setTotalPages(Math.ceil(totalItems / itemsPerPage) || 1);
       } catch (e) {
         if (!active) return;
         setError("Không thể tải danh sách thể loại");
@@ -71,12 +74,12 @@ const CompletedStories: React.FC<CompletedStoriesProps> = ({ title }) => {
 
       {/* Thanh phân trang */}
       <div className="bg-gray-900 flex justify-center py-4">
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={(p) => setPage(p)}
-      />
-    </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={(p) => setPage(p)}
+        />
+      </div>
     </div>
   );
 };
