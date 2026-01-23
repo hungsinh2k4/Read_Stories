@@ -3,6 +3,7 @@ import { Settings, Heart, Clock, BookOpen, Camera, Award, Bell } from 'lucide-re
 import StatsCard from '../components/StatsCard';
 import AuthRequired from '../components/AuthRequired';
 import ErrorDisplay from '../components/ErrorDisplay';
+import { ProfileSkeleton } from '../components/skeletons';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
 import { userDataService } from '../services/userDataService';
@@ -16,10 +17,10 @@ const UserProfilePage: React.FC = () => {
   const { user, userProfile, loading, refreshUserProfile, error: authError } = useAuth();
 
   // ✅ Get real data from Firebase
-  const { 
-    favoriteStories, 
-    readingHistory, 
-    loading: dataLoading 
+  const {
+    favoriteStories,
+    readingHistory,
+    loading: dataLoading
   } = useUserData(user?.uid || null);
 
   // ✅ Calculate real stats from Firebase data
@@ -30,7 +31,7 @@ const UserProfilePage: React.FC = () => {
       // Estimate reading time based on chapters read (30 minutes per chapter)
       return total + (story.progress * 0.1);
     }, 0),
-    completedStories: readingHistory.filter(story => 
+    completedStories: readingHistory.filter(story =>
       story.progress >= 100
     ).length
   };
@@ -64,14 +65,14 @@ const UserProfilePage: React.FC = () => {
 
   const handleSaveSettings = async () => {
     if (!user) return;
-    
+
     try {
       await userDataService.updateUserSettings(user.uid, {
         notifications: settings.notifications,
         darkMode: settings.darkMode,
         autoBookmark: settings.autoBookmark
       });
-      
+
       // Update display name and email if changed
       if (settings.displayName !== userProfile?.displayName || settings.email !== userProfile?.email) {
         await userDataService.createOrUpdateUserProfile(user.uid, {
@@ -79,12 +80,12 @@ const UserProfilePage: React.FC = () => {
           email: settings.email
         });
       }
-      
+
       // Refresh user profile
       if (refreshUserProfile) {
         await refreshUserProfile();
       }
-      
+
       showToast('Đã lưu cài đặt thành công!');
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -106,18 +107,14 @@ const UserProfilePage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Đang tải...</div>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   return (
     <AuthRequired user={user} loading={loading}>
       {/* Error Display */}
       {authError && (
-        <ErrorDisplay 
+        <ErrorDisplay
           error={authError || 'Đã có lỗi xảy ra'}
           onRetry={() => window.location.reload()}
           onDismiss={() => {
@@ -126,7 +123,7 @@ const UserProfilePage: React.FC = () => {
           }}
         />
       )}
-      
+
       <div className="min-h-screen bg-gradient-to-br bg-gray-900 from-gray-900 to-blue-800 p-4">
         {/* Notification Toast */}
         <div className={`fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 z-50 ${showNotification ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -139,8 +136,8 @@ const UserProfilePage: React.FC = () => {
             <div className="flex flex-col lg:flex-row items-center gap-8">
               {/* Avatar Section */}
               <div className="relative group">
-                <img 
-                  src={userProfile?.photoURL || 'https://via.placeholder.com/128x128/9333ea/ffffff?text=User'} 
+                <img
+                  src={userProfile?.photoURL || 'https://via.placeholder.com/128x128/9333ea/ffffff?text=User'}
                   alt="Avatar"
                   className="w-32 h-32 rounded-full object-cover border-4 border-purple-500 shadow-xl group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
@@ -148,7 +145,7 @@ const UserProfilePage: React.FC = () => {
                     target.src = 'https://via.placeholder.com/128x128/9333ea/ffffff?text=User';
                   }}
                 />
-                <button 
+                <button
                   onClick={handleAvatarUpload}
                   className="absolute bottom-2 right-2 bg-purple-500 hover:bg-purple-600 text-white p-2 rounded-full shadow-lg transform hover:scale-110 transition-all duration-200"
                 >
@@ -168,26 +165,26 @@ const UserProfilePage: React.FC = () => {
 
                 {/* ✅ Stats Grid - Using real data */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                  <StatsCard 
+                  <StatsCard
                     icon={BookOpen}
                     value={stats.storiesRead}
                     label="Truyện đã đọc"
                     color="purple"
                   />
-                  <StatsCard 
+                  <StatsCard
                     icon={Heart}
                     value={stats.favoriteCount}
                     label="Yêu thích"
                     color="pink"
                   />
-                  <StatsCard 
+                  <StatsCard
                     icon={Clock}
                     value={Math.round(stats.readingTimeHours)}
                     label="Thời gian đọc"
                     color="blue"
                     suffix="h"
                   />
-                  <StatsCard 
+                  <StatsCard
                     icon={Award}
                     value={stats.completedStories}
                     label="Hoàn thành"
@@ -212,13 +209,12 @@ const UserProfilePage: React.FC = () => {
           <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
             {/* Tab Navigation */}
             <div className="flex overflow-x-auto bg-gray-50 border-b">
-              <button 
+              <button
                 onClick={() => setActiveTab('settings')}
-                className={`px-8 py-4 font-semibold transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
-                  activeTab === 'settings' 
-                  ? 'bg-purple-500 text-white shadow-lg' 
+                className={`px-8 py-4 font-semibold transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${activeTab === 'settings'
+                  ? 'bg-purple-500 text-white shadow-lg'
                   : 'text-gray-600 hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 <Settings size={20} />
                 Cài đặt
@@ -239,10 +235,10 @@ const UserProfilePage: React.FC = () => {
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Tên hiển thị
                       </label>
-                      <input 
+                      <input
                         type="text"
                         value={settings.displayName}
-                        onChange={(e) => setSettings({...settings, displayName: e.target.value})}
+                        onChange={(e) => setSettings({ ...settings, displayName: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
                       />
                     </div>
@@ -251,27 +247,27 @@ const UserProfilePage: React.FC = () => {
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Email
                       </label>
-                      <input 
+                      <input
                         type="email"
                         value={settings.email}
-                        onChange={(e) => setSettings({...settings, email: e.target.value})}
+                        onChange={(e) => setSettings({ ...settings, email: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
                       />
                     </div>
 
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-gray-800">Tùy chọn</h3>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                         <div className="flex items-center gap-3">
                           <Bell className="text-yellow-500" size={20} />
                           <span className="text-gray-700">Nhận thông báo</span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={settings.notifications}
-                            onChange={(e) => setSettings({...settings, notifications: e.target.checked})}
+                            onChange={(e) => setSettings({ ...settings, notifications: e.target.checked })}
                             className="sr-only peer"
                           />
                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
@@ -284,10 +280,10 @@ const UserProfilePage: React.FC = () => {
                           <span className="text-gray-700">Tự động đánh dấu</span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={settings.autoBookmark}
-                            onChange={(e) => setSettings({...settings, autoBookmark: e.target.checked})}
+                            onChange={(e) => setSettings({ ...settings, autoBookmark: e.target.checked })}
                             className="sr-only peer"
                           />
                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
@@ -296,14 +292,14 @@ const UserProfilePage: React.FC = () => {
                     </div>
 
                     <div className="flex gap-4">
-                      <button 
+                      <button
                         type="button"
                         onClick={handleSaveSettings}
                         className="px-8 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
                       >
                         Lưu thay đổi
                       </button>
-                      <button 
+                      <button
                         type="button"
                         className="px-8 py-3 bg-gray-500 text-white font-semibold rounded-xl hover:bg-gray-600 transition-all duration-200"
                       >

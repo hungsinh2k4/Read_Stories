@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import StoriesSection from "../components/StoriesSection";
 import Pagination from "../components/Pagination";
+import { CompletedStoriesSkeleton } from "../components/skeletons";
 import { completedStoriesApi } from "../api/homeApi";
 import type { CategoryApiResponse, Story } from "../types/api";
 
@@ -55,11 +56,7 @@ const CompletedStories: React.FC<CompletedStoriesProps> = ({ title }) => {
   }, [page]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Đang tải...</div>
-      </div>
-    );
+    return <CompletedStoriesSkeleton />;
   }
   if (stories.length === 0) return null;
 

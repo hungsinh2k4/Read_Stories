@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search as SearchIcon, Loader } from 'lucide-react';
+import { Search as SearchIcon } from 'lucide-react';
 import { searchApi } from '../api/storyApi';
 import StoriesSection from '../components/StoriesSection';
+import { StoriesGridSkeleton } from '../components/skeletons';
 import type { StoryDetails } from '../types/story';
 import type { Story } from '../types/api';
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  
+
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -70,7 +71,7 @@ const SearchPage: React.FC = () => {
             <SearchIcon className="text-green-400" size={28} />
             <h1 className="text-3xl font-bold text-white">Kết quả tìm kiếm</h1>
           </div>
-          
+
           {query && (
             <p className="text-gray-300 text-lg">
               Tìm kiếm cho: <span className="text-green-400 font-semibold">"{query}"</span>
@@ -80,12 +81,7 @@ const SearchPage: React.FC = () => {
 
         {/* Loading */}
         {loading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="flex items-center gap-3 text-white">
-              <Loader className="animate-spin" size={24} />
-              <span className="text-lg">Đang tìm kiếm...</span>
-            </div>
-          </div>
+          <StoriesGridSkeleton count={10} showTitle={false} />
         )}
 
         {/* Error */}
@@ -113,8 +109,8 @@ const SearchPage: React.FC = () => {
                     Tìm thấy <span className="text-green-400 font-semibold">{stories.length}</span> kết quả
                   </p>
                 </div>
-                
-                <StoriesSection 
+
+                <StoriesSection
                   title=""
                   stories={stories}
                 />

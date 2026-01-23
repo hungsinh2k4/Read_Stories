@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SideBar from '../components/layout/SideBar';
 import NewStoriesSection from '../components/NewStoriesSection';
 import CategorySection from '../components/CategorySection';
+import { HomePageSkeleton } from '../components/skeletons';
 import { homeApi } from '../api/homeApi';
 import type { HomeApiResponse } from '../types/api';
 
@@ -28,11 +29,7 @@ const Home: React.FC = () => {
   }, [window.scroll(0, 0)]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Đang tải...</div>
-      </div>
-    );
+    return <HomePageSkeleton />;
   }
 
   if (error || !homeData) {

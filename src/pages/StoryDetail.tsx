@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  BookOpen, 
-  Heart, 
-  Share2, 
-  Calendar, 
-  User, 
+import {
+  BookOpen,
+  Heart,
+  Share2,
+  Calendar,
+  User,
   Tag,
   ChevronRight,
   Bookmark
@@ -13,6 +13,7 @@ import {
 import { fetchStoryDetails } from '../api/storyApi';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
+import { StoryDetailSkeleton } from '../components/skeletons';
 import type { StoryDetails } from '../types/story';
 import { toast, ToastContainer } from 'react-toastify';
 
@@ -20,11 +21,11 @@ const StoryDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { 
-    addReadingProgress, 
-    addToFavorites, 
-    removeFromFavorites, 
-    isStoryFavorite 
+  const {
+    addReadingProgress,
+    addToFavorites,
+    removeFromFavorites,
+    isStoryFavorite
   } = useUserData(user?.uid || null);
 
   const [story, setStory] = useState<StoryDetails | null>(null);
@@ -39,10 +40,10 @@ const StoryDetailPage: React.FC = () => {
   useEffect(() => {
     const loadStoryDetails = async () => {
       if (!slug) return;
-      
+
       setLoading(true);
       setError(null);
-      
+
       try {
         const storyData = await fetchStoryDetails(slug);
         setStory(storyData);
@@ -153,20 +154,13 @@ const StoryDetailPage: React.FC = () => {
         // Don't block navigation if history fails
       }
     }
-    
+
     // Navigate to chapter reader
     navigate(`/story/${slug}/chapter/${chapterData.filename}`);
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Đang tải thông tin truyện...</p>
-        </div>
-      </div>
-    );
+    return <StoryDetailSkeleton />;
   }
 
   if (error) {
@@ -177,7 +171,7 @@ const StoryDetailPage: React.FC = () => {
             <span className="text-white text-2xl">!</span>
           </div>
           <p className="text-red-400 text-lg mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg transition-colors"
           >
@@ -206,17 +200,16 @@ const StoryDetailPage: React.FC = () => {
             {/* Story Cover */}
             <div className="flex-shrink-0">
               <div className="relative group">
-                <img 
-                  src={story.thumb_url} 
+                <img
+                  src={story.thumb_url}
                   alt={story.name}
                   className="w-64 h-80 object-cover rounded-xl shadow-lg group-hover:shadow-2xl transition-shadow duration-300"
                 />
                 <div className="absolute top-4 right-4">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    story.status === 'completed' 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-blue-500 text-white'
-                  }`}>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${story.status === 'completed'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-blue-500 text-white'
+                    }`}>
                     {story.status === 'completed' ? 'Hoàn thành' : 'Đang cập nhật'}
                   </span>
                 </div>
@@ -242,7 +235,7 @@ const StoryDetailPage: React.FC = () => {
                     </span>
                   </div>
                 )}
-                
+
                 <div className="flex items-center gap-3">
                   <Calendar className="text-blue-400" size={20} />
                   <span className="text-gray-300">
@@ -253,7 +246,7 @@ const StoryDetailPage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <Tag className="text-green-400" size={20} />
                   <span className="text-gray-300">
-                    Thể loại: 
+                    Thể loại:
                     <span className="ml-2">
                       {story.category.map((cat, index) => (
                         <span key={cat.id} className="text-white">
@@ -279,11 +272,10 @@ const StoryDetailPage: React.FC = () => {
                 <button
                   onClick={handleToggleFavorite}
                   disabled={actionLoading}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 ${
-                    isFavorite 
-                      ? 'bg-red-500 hover:bg-red-600 text-white' 
-                      : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
-                  }`}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 ${isFavorite
+                    ? 'bg-red-500 hover:bg-red-600 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
+                    }`}
                 >
                   {actionLoading ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
@@ -296,11 +288,10 @@ const StoryDetailPage: React.FC = () => {
                 <button
                   onClick={handleToggleBookmark}
                   disabled={actionLoading}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 ${
-                    isFavorite 
-                      ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
-                      : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
-                  }`}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 ${isFavorite
+                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
+                    }`}
                 >
                   {actionLoading ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
@@ -350,10 +341,9 @@ const StoryDetailPage: React.FC = () => {
             Mô tả
           </h2>
           <div className="prose prose-invert max-w-none">
-            <div 
-              className={`text-gray-300 leading-relaxed ${
-                !showFullDescription ? 'line-clamp-4' : ''
-              }`}
+            <div
+              className={`text-gray-300 leading-relaxed ${!showFullDescription ? 'line-clamp-4' : ''
+                }`}
               dangerouslySetInnerHTML={{ __html: story.content || 'Chưa có mô tả' }}
             />
             {story.content && story.content.length > 200 && (
@@ -383,11 +373,10 @@ const StoryDetailPage: React.FC = () => {
                     <button
                       key={index}
                       onClick={() => setActiveChapterServer(index)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                        activeChapterServer === index
-                          ? 'bg-purple-500 text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeChapterServer === index
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
                     >
                       {server.server_name}
                     </button>
@@ -431,7 +420,7 @@ const StoryDetailPage: React.FC = () => {
             )}
           </div>
         )}
-      <ToastContainer position="top-right" autoClose={3000}/>
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </div>
   );

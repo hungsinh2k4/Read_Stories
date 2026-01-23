@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import StoriesSection from './StoriesSection';
+import { StoriesGridSkeleton } from './skeletons';
 import { categoryApi } from '../api/homeApi';
 import type { CategoryApiResponse, Story } from '../types/api';
 
@@ -38,11 +39,14 @@ const CategorySection: React.FC<CategorySectionProps> = ({ slug, title, page = 1
       active = false;
     };
   }, [slug, page]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Đang tải...</div>
-      </div>
+      <StoriesGridSkeleton
+        count={12}
+        columnsClassName="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+        showTitle={!!title}
+      />
     );
   }
   if (error) {
