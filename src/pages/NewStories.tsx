@@ -25,7 +25,10 @@ const NewStories: React.FC<NewStoriesProps> = ({ title }) => {
         if (!active) return;
         setStories(res.data.items || []);
         if (res.data.APP_DOMAIN_CDN_IMAGE) setCdnDomain(res.data.APP_DOMAIN_CDN_IMAGE);
-        setTotalPages(res.data.params && (res.data.params as any).pagination?.totalPages || 10);
+        const pagination = res.data.params && (res.data.params as any).pagination;
+        const totalItems = pagination?.totalItems || 0;
+        const itemsPerPage = pagination?.totalItemsPerPage || 24;
+        setTotalPages(Math.ceil(totalItems / itemsPerPage) || 1);
       } catch (e) {
         if (!active) return;
         setError('Không thể tải danh sách thể loại');
@@ -73,14 +76,14 @@ const NewStories: React.FC<NewStoriesProps> = ({ title }) => {
 
       {/* Thanh phân trang */}
       <div className="bg-gray-900 flex justify-center py-4">
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={(p) => setPage(p)}
-      />
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={(p) => setPage(p)}
+        />
+      </div>
     </div>
-    </div>
-    
+
   );
 };
 
