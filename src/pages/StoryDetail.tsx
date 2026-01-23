@@ -46,11 +46,19 @@ const StoryDetailPage: React.FC = () => {
 
       try {
         const storyData = await fetchStoryDetails(slug);
+        console.log('Story Data Fetched:', storyData);
+        if (storyData.chapters) {
+          console.log('Chapters length:', storyData.chapters.length);
+          if (storyData.chapters.length > 0) {
+            console.log('First server chapters:', storyData.chapters[0].server_data.length);
+          }
+        }
         setStory(storyData);
       } catch (err) {
+        console.error('Error fetching story:', err);
         setError(err instanceof Error ? err.message : 'Đã có lỗi xảy ra');
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
     scrollTo(0, 0);
@@ -156,7 +164,7 @@ const StoryDetailPage: React.FC = () => {
     }
 
     // Navigate to chapter reader
-    navigate(`/story/${slug}/chapter/${chapterData.filename}`);
+    navigate(`/story/${slug}/chapter/${chapterData.chapter_name}`);
   };
 
   if (loading) {
@@ -191,7 +199,7 @@ const StoryDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white pt-20">
       {/* Header with back button */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Story Header */}

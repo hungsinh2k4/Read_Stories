@@ -36,7 +36,10 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
   useEffect(() => {
     if (!storyDetails || chapters.length === 0) return;
 
-    const targetFilename = chapterFilename || chapters[0]?.filename;
+    // Decode filename từ URL vì có thể chứa ký tự đặc biệt
+    const decodedFilename = chapterFilename ? decodeURIComponent(chapterFilename) : null;
+    const targetFilename = decodedFilename || chapters[0]?.filename;
+
     if (targetFilename) {
       const chapter = findChapterByFilename(storyDetails, targetFilename)
         || findChapterByFilename(chapters, targetFilename);
@@ -59,14 +62,15 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
     setShowChapterList(false);
     window.scrollTo(0, 0);
 
-    // Update URL
-    navigate(`/story/${storySlug}/chapter/${chapter.filename}`, { replace: true });
+    // Update URL - dùng chapter_name thay vì filename để URL ngắn gọn hơn
+    // VD: /story/one-piece/chapter/1 thay vì /story/one-piece/chapter/One%20Piece%20[Chap%201-100]
+    navigate(`/story/${storySlug}/chapter/${chapter.chapter_name}`, { replace: true });
   };
 
-  // Chapter trước/sau
+  // Chapter trước/sau - sử dụng chapter_name
   const goToPrevChapter = () => {
     if (!currentChapter) return;
-    const prevChapter = getAdjacentChapter(chapters, currentChapter.filename, 'prev');
+    const prevChapter = getAdjacentChapter(chapters, currentChapter.chapter_name, 'prev');
     if (prevChapter) {
       navigateToChapter(prevChapter);
     }
@@ -74,7 +78,7 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
 
   const goToNextChapter = () => {
     if (!currentChapter) return;
-    const nextChapter = getAdjacentChapter(chapters, currentChapter.filename, 'next');
+    const nextChapter = getAdjacentChapter(chapters, currentChapter.chapter_name, 'next');
     if (nextChapter) {
       navigateToChapter(nextChapter);
     }
@@ -115,8 +119,8 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
     );
   }
 
-  const prevChapter = currentChapter ? getAdjacentChapter(chapters, currentChapter.filename, 'prev') : null;
-  const nextChapter = currentChapter ? getAdjacentChapter(chapters, currentChapter.filename, 'next') : null;
+  const prevChapter = currentChapter ? getAdjacentChapter(chapters, currentChapter.chapter_name, 'prev') : null;
+  const nextChapter = currentChapter ? getAdjacentChapter(chapters, currentChapter.chapter_name, 'next') : null;
 
   return (
     <div className="min-h-screen bg-gray-900 relative">
@@ -251,19 +255,16 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
             </div>
 
             <div className="p-2">
-              {chapters.map((chapter, index) => (
+              {chapters.map((chapter) => (
                 <button
-                  key={chapter.filename}
+                  key={chapter.chapter_name}
                   onClick={() => navigateToChapter(chapter)}
-                  className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${currentChapter?.filename === chapter.filename
+                  className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${currentChapter?.chapter_name === chapter.chapter_name
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                     }`}
                 >
-                  <div className="font-medium">Chương {index + 1}</div>
-                  <div className="text-sm opacity-80 truncate">
-                    {chapter.chapter_name}
-                  </div>
+                  <div className="font-medium">Chương {chapter.chapter_name}</div>
                 </button>
               ))}
             </div>
