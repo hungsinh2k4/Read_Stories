@@ -29,13 +29,13 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({
   };
 
   return (
-    <div className="bg-gray-900 text-white py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="bg-gray-900 text-white py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4">
         {title && (
-          <h2 className="text-2xl font-bold text-center mb-8">{title}</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-8">{title}</h2>
         )}
 
-        <div className={`grid ${columnsClassName} gap-4`}>
+        <div className={`grid ${columnsClassName} gap-2 sm:gap-4`}>
           {stories
             .filter((story) => story.chaptersLatest?.[0]?.chapter_name)
             .map((story) => (
