@@ -43,20 +43,53 @@ export const fetchChapterContent = async (chapterApiData: string): Promise<strin
   return imageUrls;
 };
 
-// Lấy danh sách chapter từ story details
-export const getChapterList = (storyDetails: StoryDetails): ChapterData[] => {
+// Lấy danh sách chapter từ story details (gộp tất cả servers)
+export const getChapterList = (storyDetails: StoryDetails, serverIndex?: number): ChapterData[] => {
   if (!storyDetails.chapters || storyDetails.chapters.length === 0) {
     return [];
   }
 
-  // Lấy server đầu tiên (thường là server chính)
-  const mainServer = storyDetails.chapters[0];
-  return mainServer.server_data || [];
+  // Nếu chỉ định server cụ thể
+  if (serverIndex !== undefined && storyDetails.chapters[serverIndex]) {
+    return storyDetails.chapters[serverIndex].server_data || [];
+  }
+
+  // Mặc định lấy tất cả chapters từ mọi server (đã loại bỏ trùng lặp)
+  const allChapters: ChapterData[] = [];
+  const seenFilenames = new Set<string>();
+
+  for (const server of storyDetails.chapters) {
+    for (const chapter of server.server_data || []) {
+      if (!seenFilenames.has(chapter.filename)) {
+        seenFilenames.add(chapter.filename);
+        allChapters.push(chapter);
+      }
+    }
+  }
+
+  return allChapters;
 };
 
-// Tìm chapter theo filename
-export const findChapterByFilename = (chapters: ChapterData[], filename: string): ChapterData | null => {
-  return chapters.find(chapter => chapter.filename === filename) || null;
+// Tìm chapter theo filename trong danh sách hoặc từ StoryDetails
+export const findChapterByFilename = (
+  chaptersOrStory: ChapterData[] | StoryDetails,
+  filename: string
+): ChapterData | null => {
+  // Nếu là array ChapterData[]
+  if (Array.isArray(chaptersOrStory)) {
+    return chaptersOrStory.find(chapter => chapter.filename === filename) || null;
+  }
+
+  // Nếu là StoryDetails, tìm trong tất cả servers
+  const storyDetails = chaptersOrStory as StoryDetails;
+  if (!storyDetails.chapters) return null;
+
+  for (const server of storyDetails.chapters) {
+    const found = server.server_data?.find(chapter => chapter.filename === filename);
+    if (found) return found;
+  }
+
+  return null;
 };
 
 // Lấy chapter trước/sau
