@@ -3,37 +3,37 @@ import SideBar from '../components/layout/SideBar';
 import NewStoriesSection from '../components/NewStoriesSection';
 import CategorySection from '../components/CategorySection';
 import { HomePageSkeleton } from '../components/skeletons';
-import { homeApi } from '../api/homeApi';
-import type { HomeApiResponse } from '../types/api';
+import { newStoriesApi } from '../api/homeApi';
+import type { CategoryApiResponse } from '../types/api';
 
 const Home: React.FC = () => {
-  const [homeData, setHomeData] = useState<HomeApiResponse | null>(null);
+  const [newStoriesData, setNewStoriesData] = useState<CategoryApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     window.scroll(0, 0);
-    const fetchHomeData = async () => {
+    const fetchNewStories = async () => {
       try {
         setLoading(true);
-        const data = await homeApi.getHomeData();
-        setHomeData(data);
+        const data = await newStoriesApi.getNewStories(1);
+        setNewStoriesData(data);
       } catch (err) {
         setError('Không thể tải dữ liệu trang chủ');
-        console.error('Error fetching home data:', err);
+        console.error('Error fetching new stories data:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHomeData();
+    fetchNewStories();
   }, []);
 
   if (loading) {
     return <HomePageSkeleton />;
   }
 
-  if (error || !homeData) {
+  if (error || !newStoriesData) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-red-400 text-xl">{error || 'Có lỗi xảy ra'}</div>
@@ -41,8 +41,8 @@ const Home: React.FC = () => {
     );
   }
 
-  const stories = homeData.data.items;
-  const cdnDomain = homeData.data.APP_DOMAIN_CDN_IMAGE;
+  const stories = newStoriesData.data.items;
+  const cdnDomain = newStoriesData.data.APP_DOMAIN_CDN_IMAGE;
 
   return (
     <div className="min-h-screen bg-gray-900">

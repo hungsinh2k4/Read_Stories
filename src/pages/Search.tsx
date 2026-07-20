@@ -3,18 +3,23 @@ import { useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon } from 'lucide-react';
 import { searchApi } from '../api/storyApi';
 import StoriesSection from '../components/StoriesSection';
+import Pagination from '../components/Pagination';
 import { StoriesGridSkeleton } from '../components/skeletons';
 import type { StoryDetails } from '../types/story';
 import type { Story } from '../types/api';
 
 const SearchPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  const page = parseInt(searchParams.get('page') || '1', 10);
 
   const [stories, setStories] = useState<Story[]>([]);
+  const [cdnDomain, setCdnDomain] = useState<string>('https://img.otruyenapi.com');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalStories, setTotalStories] = useState<number>(0);
 
   // Convert StoryDetails to Story format
   const convertToStory = (storyDetails: StoryDetails): Story => ({
@@ -27,7 +32,7 @@ const SearchPage: React.FC = () => {
     sub_docquyen: storyDetails.sub_docquyen,
     category: storyDetails.category,
     updatedAt: storyDetails.updatedAt,
-    chaptersLatest: storyDetails.chaptersLatest.map(chapter => ({
+    chaptersLatest: (storyDetails.chaptersLatest || []).map(chapter => ({
       filename: chapter.filename,
       chapter_name: chapter.chapter_name,
       chapter_title: chapter.chapter_title || '',
@@ -37,11 +42,15 @@ const SearchPage: React.FC = () => {
 
   useEffect(() => {
     if (query.trim()) {
-      handleSearch(query);
+      handleSearch(query, page);
     }
-  }, [query]);
+  }, [query, page]);
 
-  const handleSearch = async (searchQuery: string) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [page]);
+
+  const handleSearch = async (searchQuery: string, searchPage: number = 1) => {
     if (!searchQuery.trim()) return;
 
     setLoading(true);
@@ -49,10 +58,20 @@ const SearchPage: React.FC = () => {
     setHasSearched(true);
 
     try {
-      const response = await searchApi(searchQuery);
+      const response = await searchApi(searchQuery, searchPage);
       const searchResults = response.data.items || [];
+      if (response.data.APP_DOMAIN_CDN_IMAGE) {
+        setCdnDomain(response.data.APP_DOMAIN_CDN_IMAGE);
+      }
       const convertedStories = searchResults.map(convertToStory);
       setStories(convertedStories);
+
+      // Tính totalPages từ totalItems / itemsPerPage
+      const pagination = response.data.params && (response.data.params as any).pagination;
+      const totalItems = pagination?.totalItems || 0;
+      const itemsPerPage = pagination?.totalItemsPerPage || 24;
+      setTotalPages(Math.ceil(totalItems / itemsPerPage) || 1);
+      setTotalStories(totalItems);
     } catch (err) {
       console.error('Search error:', err);
       setError('Có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại.');
@@ -106,14 +125,26 @@ const SearchPage: React.FC = () => {
               <>
                 <div className="mb-6">
                   <p className="text-gray-300">
-                    Tìm thấy <span className="text-green-400 font-semibold">{stories.length}</span> kết quả
+                    Tìm thấy <span className="text-green-400 font-semibold">{totalStories}</span> kết quả
                   </p>
                 </div>
 
                 <StoriesSection
                   title=""
                   stories={stories}
+                  cdnDomain={cdnDomain}
                 />
+
+                {/* Thanh phân trang */}
+                {totalPages > 1 && (
+                  <div className="bg-gray-900 flex justify-center py-6">
+                    <Pagination
+                      currentPage={page}
+                      totalPages={totalPages}
+                      onPageChange={(p) => setSearchParams({ q: query, page: p.toString() })}
+                    />
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-center py-20">
