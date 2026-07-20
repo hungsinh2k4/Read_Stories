@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { userDataService, type ReadingProgress, type FavoriteStory } from "../services/userDataService";
 import { useAuthContext } from "./AuthContext";
 import type { Story } from "../types/api";
@@ -69,17 +69,29 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Load user data - only when userId changes
+    // Track which userId we've already loaded data for to prevent duplicate fetches
+    const loadedUserIdRef = useRef<string | null>(null);
+    const isLoadingRef = useRef(false);
+
+    // Load user data - only when userId changes AND we haven't loaded for this user yet
     useEffect(() => {
+        // If no user, clear data
         if (!userId) {
             setReadingHistory([]);
             setFavoriteStories([]);
             setLoading(false);
+            loadedUserIdRef.current = null;
+            return;
+        }
+
+        // Skip if we've already loaded data for this userId or currently loading
+        if (loadedUserIdRef.current === userId || isLoadingRef.current) {
             return;
         }
 
         const loadUserData = async () => {
             try {
+                isLoadingRef.current = true;
                 setLoading(true);
 
                 const [history, favorites] = await Promise.all([
@@ -90,11 +102,13 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 setReadingHistory(history);
                 setFavoriteStories(favorites);
                 setError(null);
+                loadedUserIdRef.current = userId;
             } catch (err) {
                 console.error('Error loading user data:', err);
                 setError(err instanceof Error ? err.message : 'Đã có lỗi khi tải dữ liệu');
             } finally {
                 setLoading(false);
+                isLoadingRef.current = false;
             }
         };
 
@@ -135,7 +149,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         if (!userId) return;
 
         try {
-            await userDataService.addOrUpdateReadingProgress({
+            const newProgress: ReadingProgress = {
                 userId,
                 storyId,
                 storyName,
@@ -148,11 +162,20 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 rating,
                 isFavorite: favoriteStories.some(fav => fav.storyId === storyId),
                 category
-            });
+            };
 
-            // Refresh reading history
-            const updatedHistory = await userDataService.getReadingHistory(userId);
-            setReadingHistory(updatedHistory);
+            await userDataService.addOrUpdateReadingProgress(newProgress);
+
+            // Update local state instead of refetching
+            setReadingHistory(prev => {
+                const existingIndex = prev.findIndex(item => item.storyId === storyId);
+                if (existingIndex >= 0) {
+                    const updated = [...prev];
+                    updated[existingIndex] = newProgress;
+                    return updated;
+                }
+                return [...prev, newProgress];
+            });
         } catch (err) {
             console.error('Error adding reading progress:', err);
             setError(err instanceof Error ? err.message : 'Đã có lỗi khi cập nhật tiến độ đọc');
@@ -171,7 +194,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         if (!userId) return;
 
         try {
-            await userDataService.addToFavorites({
+            const newFavorite: FavoriteStory = {
                 userId,
                 storyId,
                 storyName,
@@ -180,11 +203,18 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 addedAt: new Date(),
                 category,
                 status
-            });
+            };
 
-            // Refresh favorites
-            const updatedFavorites = await userDataService.getFavoriteStories(userId);
-            setFavoriteStories(updatedFavorites);
+            await userDataService.addToFavorites(newFavorite);
+
+            // Update local state instead of refetching
+            setFavoriteStories(prev => {
+                // Check if already exists
+                if (prev.some(fav => fav.storyId === storyId)) {
+                    return prev;
+                }
+                return [...prev, newFavorite];
+            });
         } catch (err) {
             console.error('Error adding to favorites:', err);
             setError(err instanceof Error ? err.message : 'Đã có lỗi khi thêm vào yêu thích');
@@ -198,9 +228,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         try {
             await userDataService.removeFromFavorites(userId, storyId);
 
-            // Refresh favorites
-            const updatedFavorites = await userDataService.getFavoriteStories(userId);
-            setFavoriteStories(updatedFavorites);
+            // Update local state instead of refetching
+            setFavoriteStories(prev => prev.filter(fav => fav.storyId !== storyId));
         } catch (err) {
             console.error('Error removing from favorites:', err);
             setError(err instanceof Error ? err.message : 'Đã có lỗi khi xóa khỏi yêu thích');

@@ -133,7 +133,7 @@ const Navbar = () => {
         {/* Logo */}
         <div className="flex items-center">
           <Link to="/" className="hover:opacity-90 transition-opacity" onClick={closeMobileMenu}>
-            <h1 className="text-xl sm:text-2xl font-bold text-green-400">TRUYENTRANVIP</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-green-400">TRUYENTRANHVIP</h1>
           </Link>
         </div>
 

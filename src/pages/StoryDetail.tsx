@@ -7,8 +7,7 @@ import {
   Calendar,
   User,
   Tag,
-  ChevronRight,
-  Bookmark
+  ChevronRight
 } from 'lucide-react';
 import { fetchStoryDetails } from '../api/storyApi';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -104,19 +103,7 @@ const StoryDetailPage: React.FC = () => {
     }
   };
 
-  const handleToggleBookmark = async () => {
-    if (!user || !story) {
-      toast.warning('Vui lòng đăng nhập để lưu truyện');
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
-      return;
-    }
 
-    // For now, bookmarks work the same as favorites
-    // In the future, you could implement a separate bookmark system
-    await handleToggleFavorite();
-  };
 
   const handleShare = async () => {
     if (navigator.share && story) {
@@ -291,22 +278,6 @@ const StoryDetailPage: React.FC = () => {
                     <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
                   )}
                   {actionLoading ? 'Đang xử lý...' : (isFavorite ? 'Đã thích' : 'Yêu thích')}
-                </button>
-
-                <button
-                  onClick={handleToggleBookmark}
-                  disabled={actionLoading}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 ${isFavorite
-                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
-                    }`}
-                >
-                  {actionLoading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
-                  ) : (
-                    <Bookmark size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-                  )}
-                  {actionLoading ? 'Đang xử lý...' : (isFavorite ? 'Đã lưu' : 'Lưu truyện')}
                 </button>
 
                 <button
