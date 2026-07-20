@@ -99,9 +99,9 @@ export const getAdjacentChapter = (chapters: ChapterData[], currentChapterName: 
 };
 
 
-export const searchApi = async (query: string): Promise<SearchApiResponse> => {
+export const searchApi = async (query: string, page: number = 1): Promise<SearchApiResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tim-kiem?keyword=${encodeURIComponent(query)}`);
+    const response = await fetch(`${API_BASE_URL}/tim-kiem?keyword=${encodeURIComponent(query)}&page=${page}`);
     if (!response.ok) {
       throw new Error('Failed to fetch search results');
     }

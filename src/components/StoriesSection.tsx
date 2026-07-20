@@ -37,7 +37,6 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({
 
         <div className={`grid ${columnsClassName} gap-2 sm:gap-4`}>
           {stories
-            .filter((story) => story.chaptersLatest?.[0]?.chapter_name)
             .map((story) => (
               <Link key={story._id} to={`/story/${story.slug}`}>
                 <div className="group cursor-pointer">

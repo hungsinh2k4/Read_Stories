@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import CategorySection from "../components/CategorySection";
 import { getAllGenres } from "../api/storyApi";
 import { GenresSkeleton } from "../components/skeletons";
@@ -12,6 +12,9 @@ interface GenreData {
 
 const GenrePageWrapper: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") || "1", 10);
+
   const [genres, setGenres] = useState<GenreData[]>([]);
   const [loading, setLoading] = useState(true);
   const [genreExists, setGenreExists] = useState<boolean | null>(null);
@@ -90,6 +93,9 @@ const GenrePageWrapper: React.FC = () => {
     <CategorySection
       slug={slug}
       title={getGenreTitle(slug)}
+      page={page}
+      showPagination={true}
+      onPageChange={(p) => setSearchParams({ page: p.toString() })}
     />
   );
 };
