@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, List, X, Home } from 'lucide-react';
-import { fetchStoryDetails, fetchChapterContent, getChapterList, findChapterByFilename, getAdjacentChapter } from '../api/storyApi';
+import { getChapterList, findChapterByFilename, getAdjacentChapter } from '../api/storyApi';
+import { useStoryDetails, useChapterContent } from '../hooks/useStoryQueries';
 import { ChapterReaderSkeleton } from './skeletons';
-import type { StoryDetails, ChapterData } from '../types/story';
+import type { ChapterData } from '../types/story';
 
 interface ChapterReaderProps { }
 
@@ -15,75 +16,61 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
 
   const navigate = useNavigate();
 
-  const [storyDetails, setStoryDetails] = useState<StoryDetails | null>(null);
   const [currentChapter, setCurrentChapter] = useState<ChapterData | null>(null);
-  const [chapterImages, setChapterImages] = useState<string[]>([]);
-  const [chapters, setChapters] = useState<ChapterData[]>([]);
   const [showChapterList, setShowChapterList] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  // Load story details và chapter list
+  // ✅ Sử dụng TanStack Query để cache story details (không gọi lại API mỗi lần next chapter)
+  const {
+    data: storyDetails,
+    isLoading: isLoadingStory,
+    error: storyError
+  } = useStoryDetails(storySlug || '');
+
+  // ✅ Lấy danh sách chapters từ story details (memoized)
+  const chapters = useMemo(() => {
+    if (!storyDetails) return [];
+    return getChapterList(storyDetails);
+  }, [storyDetails]);
+
+  // ✅ Tìm chapter hiện tại khi có story details
   useEffect(() => {
-    const loadStoryData = async () => {
-      if (!storySlug) return;
+    if (!storyDetails || chapters.length === 0) return;
 
-      try {
-        setLoading(true);
-        const story = await fetchStoryDetails(storySlug);
-        setStoryDetails(story);
+    // Decode filename từ URL vì có thể chứa ký tự đặc biệt
+    const decodedFilename = chapterFilename ? decodeURIComponent(chapterFilename) : null;
+    const targetFilename = decodedFilename || chapters[0]?.filename;
 
-        const chapterList = getChapterList(story);
-        setChapters(chapterList);
-
-        // Nếu không có chapterFilename, chọn chapter đầu tiên
-        const targetFilename = chapterFilename || (chapterList[0]?.filename);
-        if (targetFilename) {
-          const chapter = findChapterByFilename(chapterList, targetFilename);
-          if (chapter) {
-            setCurrentChapter(chapter);
-            await loadChapterContent(chapter.chapter_api_data);
-          }
-        }
-      } catch (err) {
-        setError('Không thể tải truyện');
-        console.error(err);
-      } finally {
-        setLoading(false);
+    if (targetFilename) {
+      const chapter = findChapterByFilename(storyDetails, targetFilename)
+        || findChapterByFilename(chapters, targetFilename);
+      if (chapter) {
+        setCurrentChapter(chapter);
       }
-    };
-
-    loadStoryData();
-  }, [window.scroll(0, 0), storySlug, chapterFilename]);
-
-  // Load nội dung chapter
-  const loadChapterContent = async (chapterApiData: string) => {
-    try {
-      setLoading(true);
-      const images = await fetchChapterContent(chapterApiData);
-      setChapterImages(images);
-    } catch (err) {
-      setError('Không thể tải nội dung chapter');
-      console.error(err);
-    } finally {
-      setLoading(false);
     }
-  };
+    window.scrollTo(0, 0);
+  }, [storyDetails, chapters, chapterFilename]);
 
-  // Chuyển chapter
-  const navigateToChapter = async (chapter: ChapterData) => {
+  // ✅ Sử dụng TanStack Query để cache chapter content
+  const {
+    data: chapterImages = [],
+    isLoading: isLoadingChapter
+  } = useChapterContent(currentChapter?.chapter_api_data || '');
+
+  // Chuyển chapter (chỉ update state, không gọi API vì TanStack Query sẽ tự xử lý)
+  const navigateToChapter = (chapter: ChapterData) => {
     setCurrentChapter(chapter);
     setShowChapterList(false);
-    await loadChapterContent(chapter.chapter_api_data);
+    window.scrollTo(0, 0);
 
-    // Update URL
-    navigate(`/story/${storySlug}/chapter/${chapter.filename}`, { replace: true });
+    // Update URL - dùng chapter_name thay vì filename để URL ngắn gọn hơn
+    // VD: /story/one-piece/chapter/1 thay vì /story/one-piece/chapter/One%20Piece%20[Chap%201-100]
+    navigate(`/story/${storySlug}/chapter/${chapter.chapter_name}`, { replace: true });
   };
 
-  // Chapter trước/sau
+  // Chapter trước/sau - sử dụng chapter_name
   const goToPrevChapter = () => {
     if (!currentChapter) return;
-    const prevChapter = getAdjacentChapter(chapters, currentChapter.filename, 'prev');
+    const prevChapter = getAdjacentChapter(chapters, currentChapter.chapter_name, 'prev');
     if (prevChapter) {
       navigateToChapter(prevChapter);
     }
@@ -91,7 +78,7 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
 
   const goToNextChapter = () => {
     if (!currentChapter) return;
-    const nextChapter = getAdjacentChapter(chapters, currentChapter.filename, 'next');
+    const nextChapter = getAdjacentChapter(chapters, currentChapter.chapter_name, 'next');
     if (nextChapter) {
       navigateToChapter(nextChapter);
     }
@@ -117,20 +104,23 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [currentChapter, chapters]);
 
-  if (loading) {
+  // Loading state
+  const isLoading = isLoadingStory || (isLoadingChapter && chapterImages.length === 0);
+
+  if (isLoading) {
     return <ChapterReaderSkeleton />;
   }
 
-  if (error) {
+  if (storyError) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-red-400 text-lg">{error}</div>
+        <div className="text-red-400 text-lg">Không thể tải truyện</div>
       </div>
     );
   }
 
-  const prevChapter = currentChapter ? getAdjacentChapter(chapters, currentChapter.filename, 'prev') : null;
-  const nextChapter = currentChapter ? getAdjacentChapter(chapters, currentChapter.filename, 'next') : null;
+  const prevChapter = currentChapter ? getAdjacentChapter(chapters, currentChapter.chapter_name, 'prev') : null;
+  const nextChapter = currentChapter ? getAdjacentChapter(chapters, currentChapter.chapter_name, 'next') : null;
 
   return (
     <div className="min-h-screen bg-gray-900 relative">
@@ -188,7 +178,15 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
       {/* Nội dung ảnh */}
       <div className="pt-20 pb-8 reader-container">
         <div className="max-w-4xl mx-auto px-4">
-          {chapterImages.length === 0 && !loading && (
+          {/* Loading indicator for chapter content */}
+          {isLoadingChapter && chapterImages.length === 0 && (
+            <div className="text-center text-gray-400 py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p>Đang tải nội dung chương...</p>
+            </div>
+          )}
+
+          {chapterImages.length === 0 && !isLoadingChapter && (
             <div className="text-center text-gray-400 py-20">
               <p>Không có nội dung để hiển thị</p>
             </div>
@@ -257,19 +255,16 @@ const ChapterReader: React.FC<ChapterReaderProps> = () => {
             </div>
 
             <div className="p-2">
-              {chapters.map((chapter, index) => (
+              {chapters.map((chapter) => (
                 <button
-                  key={chapter.filename}
+                  key={chapter.chapter_name}
                   onClick={() => navigateToChapter(chapter)}
-                  className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${currentChapter?.filename === chapter.filename
+                  className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${currentChapter?.chapter_name === chapter.chapter_name
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                     }`}
                 >
-                  <div className="font-medium">Chương {index + 1}</div>
-                  <div className="text-sm opacity-80 truncate">
-                    {chapter.chapter_name}
-                  </div>
+                  <div className="font-medium">Chương {chapter.chapter_name}</div>
                 </button>
               ))}
             </div>

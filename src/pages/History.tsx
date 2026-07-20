@@ -4,21 +4,21 @@ import { Link, useNavigate } from 'react-router-dom';
 import AuthRequired from '../components/AuthRequired';
 import ErrorDisplay from '../components/ErrorDisplay';
 import { HistorySkeleton } from '../components/skeletons';
-import { useAuth } from '../hooks/useAuth';
-import { useUserData } from '../hooks/useUserData';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useUserDataContext } from '../contexts/UserDataContext';
 import { ToastContainer, toast } from 'react-toastify';
 
 
 const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading, error: authError } = useAuth();
+  const { user, loading: authLoading, error: authError } = useAuthContext();
   const {
     loading: dataLoading,
     error: dataError,
     getStoriesWithProgress,
     addToFavorites,
     isStoryFavorite
-  } = useUserData(user?.uid || null);
+  } = useUserDataContext();
 
   const loading = authLoading || dataLoading;
   const readingHistoryWithProgress = getStoriesWithProgress();

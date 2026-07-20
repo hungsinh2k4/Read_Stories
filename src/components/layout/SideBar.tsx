@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { Story } from '../../types/api';
-import { useAuth } from '../../hooks/useAuth';
-import { useUserData } from '../../hooks/useUserData';
+import { useUserDataContext } from '../../contexts/UserDataContext';
 import { Link } from 'react-router-dom';
 import { Star, Eye, History } from 'lucide-react';
 
@@ -12,8 +11,7 @@ interface SideBarProps {
 
 const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otruyenapi.com' }) => {
   const [activeTab, setActiveTab] = useState('ngay');
-  const { user } = useAuth();
-  const { getStoriesWithProgress } = useUserData(user ? user.uid : null);
+  const { getStoriesWithProgress } = useUserDataContext();
 
   const readingHistoryWithProgress = getStoriesWithProgress();
 
@@ -53,8 +51,8 @@ const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otr
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${activeTab === tab.key
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-green-500 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
             >
               {tab.label}
@@ -68,9 +66,9 @@ const SideBar: React.FC<SideBarProps> = ({ stories, cdnDomain = 'https://img.otr
             <Link to={`/story/${item.slug}`} key={item.id}>
               <div className="flex items-center space-x-3 p-2 hover:bg-gray-700 rounded transition-colors cursor-pointer">
                 <span className={`font-bold text-sm w-6 ${index === 0 ? 'text-yellow-400' :
-                    index === 1 ? 'text-gray-300' :
-                      index === 2 ? 'text-amber-600' :
-                        'text-gray-400'
+                  index === 1 ? 'text-gray-300' :
+                    index === 2 ? 'text-amber-600' :
+                      'text-gray-400'
                   }`}>
                   {index + 1}
                 </span>

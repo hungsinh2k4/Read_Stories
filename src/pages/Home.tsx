@@ -12,6 +12,7 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    window.scroll(0, 0);
     const fetchHomeData = async () => {
       try {
         setLoading(true);
@@ -26,7 +27,7 @@ const Home: React.FC = () => {
     };
 
     fetchHomeData();
-  }, [window.scroll(0, 0)]);
+  }, []);
 
   if (loading) {
     return <HomePageSkeleton />;

@@ -7,12 +7,11 @@ import {
   Calendar,
   User,
   Tag,
-  ChevronRight,
-  Bookmark
+  ChevronRight
 } from 'lucide-react';
 import { fetchStoryDetails } from '../api/storyApi';
-import { useAuth } from '../hooks/useAuth';
-import { useUserData } from '../hooks/useUserData';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useUserDataContext } from '../contexts/UserDataContext';
 import { StoryDetailSkeleton } from '../components/skeletons';
 import type { StoryDetails } from '../types/story';
 import { toast, ToastContainer } from 'react-toastify';
@@ -20,13 +19,13 @@ import { toast, ToastContainer } from 'react-toastify';
 const StoryDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const {
     addReadingProgress,
     addToFavorites,
     removeFromFavorites,
     isStoryFavorite
-  } = useUserData(user?.uid || null);
+  } = useUserDataContext();
 
   const [story, setStory] = useState<StoryDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,8 +45,16 @@ const StoryDetailPage: React.FC = () => {
 
       try {
         const storyData = await fetchStoryDetails(slug);
+        console.log('Story Data Fetched:', storyData);
+        if (storyData.chapters) {
+          console.log('Chapters length:', storyData.chapters.length);
+          if (storyData.chapters.length > 0) {
+            console.log('First server chapters:', storyData.chapters[0].server_data.length);
+          }
+        }
         setStory(storyData);
       } catch (err) {
+        console.error('Error fetching story:', err);
         setError(err instanceof Error ? err.message : 'Đã có lỗi xảy ra');
       } finally {
         setLoading(false);
@@ -96,19 +103,7 @@ const StoryDetailPage: React.FC = () => {
     }
   };
 
-  const handleToggleBookmark = async () => {
-    if (!user || !story) {
-      toast.warning('Vui lòng đăng nhập để lưu truyện');
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
-      return;
-    }
 
-    // For now, bookmarks work the same as favorites
-    // In the future, you could implement a separate bookmark system
-    await handleToggleFavorite();
-  };
 
   const handleShare = async () => {
     if (navigator.share && story) {
@@ -156,7 +151,7 @@ const StoryDetailPage: React.FC = () => {
     }
 
     // Navigate to chapter reader
-    navigate(`/story/${slug}/chapter/${chapterData.filename}`);
+    navigate(`/story/${slug}/chapter/${chapterData.chapter_name}`);
   };
 
   if (loading) {
@@ -191,7 +186,7 @@ const StoryDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white pt-20">
       {/* Header with back button */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Story Header */}
@@ -283,22 +278,6 @@ const StoryDetailPage: React.FC = () => {
                     <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
                   )}
                   {actionLoading ? 'Đang xử lý...' : (isFavorite ? 'Đã thích' : 'Yêu thích')}
-                </button>
-
-                <button
-                  onClick={handleToggleBookmark}
-                  disabled={actionLoading}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 ${isFavorite
-                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
-                    }`}
-                >
-                  {actionLoading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
-                  ) : (
-                    <Bookmark size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-                  )}
-                  {actionLoading ? 'Đang xử lý...' : (isFavorite ? 'Đã lưu' : 'Lưu truyện')}
                 </button>
 
                 <button

@@ -44,24 +44,50 @@ export const fetchChapterContent = async (chapterApiData: string): Promise<strin
 };
 
 // Lấy danh sách chapter từ story details
-export const getChapterList = (storyDetails: StoryDetails): ChapterData[] => {
+export const getChapterList = (storyDetails: StoryDetails, serverIndex: number = 0): ChapterData[] => {
   if (!storyDetails.chapters || storyDetails.chapters.length === 0) {
     return [];
   }
 
-  // Lấy server đầu tiên (thường là server chính)
-  const mainServer = storyDetails.chapters[0];
-  return mainServer.server_data || [];
+  // Lấy server theo index (mặc định server 0 - server chính)
+  const targetServer = storyDetails.chapters[serverIndex] || storyDetails.chapters[0];
+  return targetServer?.server_data || [];
 };
 
-// Tìm chapter theo filename
-export const findChapterByFilename = (chapters: ChapterData[], filename: string): ChapterData | null => {
-  return chapters.find(chapter => chapter.filename === filename) || null;
+// Tìm chapter theo filename hoặc chapter_api_data trong danh sách hoặc từ StoryDetails
+export const findChapterByFilename = (
+  chaptersOrStory: ChapterData[] | StoryDetails,
+  identifier: string
+): ChapterData | null => {
+  // Nếu là array ChapterData[]
+  if (Array.isArray(chaptersOrStory)) {
+    // Tìm theo filename, chapter_api_data hoặc chapter_name
+    return chaptersOrStory.find(chapter =>
+      chapter.filename === identifier ||
+      chapter.chapter_api_data === identifier ||
+      chapter.chapter_name === identifier
+    ) || null;
+  }
+
+  // Nếu là StoryDetails, tìm trong tất cả servers
+  const storyDetails = chaptersOrStory as StoryDetails;
+  if (!storyDetails.chapters) return null;
+
+  for (const server of storyDetails.chapters) {
+    const found = server.server_data?.find(chapter =>
+      chapter.filename === identifier ||
+      chapter.chapter_api_data === identifier ||
+      chapter.chapter_name === identifier
+    );
+    if (found) return found;
+  }
+
+  return null;
 };
 
-// Lấy chapter trước/sau
-export const getAdjacentChapter = (chapters: ChapterData[], currentFilename: string, direction: 'prev' | 'next'): ChapterData | null => {
-  const currentIndex = chapters.findIndex(chapter => chapter.filename === currentFilename);
+// Lấy chapter trước/sau - sử dụng chapter_name vì là unique
+export const getAdjacentChapter = (chapters: ChapterData[], currentChapterName: string, direction: 'prev' | 'next'): ChapterData | null => {
+  const currentIndex = chapters.findIndex(chapter => chapter.chapter_name === currentChapterName);
   if (currentIndex === -1) return null;
 
   if (direction === 'prev' && currentIndex > 0) {
@@ -69,7 +95,6 @@ export const getAdjacentChapter = (chapters: ChapterData[], currentFilename: str
   } else if (direction === 'next' && currentIndex < chapters.length - 1) {
     return chapters[currentIndex + 1];
   }
-
   return null;
 };
 
